@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>مدیریت اکانت</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f1f1f3;--bg3:#e7e7ea;--text:#0f0f10;--text2:#707579;--icon2:#707579;
+--meta:#8b8f95;--border:#e6e8ec;--divider:#d5d9df;--primary:#3390ec;
+--primary-tint:rgba(51,144,236,.1);--danger:#e53935;--success:#22c55e;
+--font:"Vazirmatn",-apple-system,system-ui,sans-serif;--font-round:"Nunito","Vazirmatn",sans-serif;
+--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+html.theme-dark{--bg:#18191c;--bg2:#232529;--bg3:#2b2e33;--text:#f3f4f6;--text2:#a9adb4;
+--icon2:#a9adb4;--meta:#82868d;--border:#2b2e33;--divider:#3a3e45;
+--primary:#a08eff;--primary-tint:rgba(160,142,255,.14);color-scheme:dark}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);font-size:16px;line-height:1.5;color:var(--text);
+background:var(--bg);-webkit-font-smoothing:antialiased;user-select:none;direction:rtl}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;outline:none;padding:0}
+input,textarea{font:inherit;color:inherit;outline:none;border:0;background:none}
+.icon{display:inline-flex;width:1.5rem;height:1.5rem;flex-shrink:0}
+.icon svg{width:100%;height:100%;display:block}
+.app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+
+.TopBar{display:flex;align-items:center;gap:.5rem;padding:.5rem;
+padding-top:calc(.75rem + var(--safe-top));
+background:color-mix(in srgb,var(--bg) 88%,transparent);
+-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+border-bottom:1px solid var(--border);flex-shrink:0;min-height:3.75rem;z-index:5}
+.TopBar .icon-btn{width:2.5rem;height:2.5rem;border-radius:50%;display:flex;
+align-items:center;justify-content:center;color:var(--icon2);
+transition:background .15s,color .15s}
+.TopBar .icon-btn:hover{background:var(--primary-tint);color:var(--primary)}
+.TopBar .title{flex:1;font-size:1.0625rem;font-weight:600;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+
+.scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+-webkit-overflow-scrolling:touch;padding-bottom:3rem}
+
+/* Hero centered */
+.hero-c{padding:2rem 1.25rem 1.75rem;
+display:flex;flex-direction:column;align-items:center;text-align:center;
+gap:.875rem;
+background:linear-gradient(135deg,
+  color-mix(in srgb,var(--primary) 12%,var(--bg)) 0%,
+  color-mix(in srgb,var(--primary) 4%,var(--bg2)) 100%);
+border-bottom:1px solid var(--border)}
+.hero-c .av{width:6.5rem;height:6.5rem;border-radius:50%;flex-shrink:0;
+overflow:hidden;position:relative;
+display:flex;align-items:center;justify-content:center;
+color:#fff;font-family:var(--font-round);font-weight:700;font-size:2.5rem;
+border:4px solid var(--bg);box-shadow:0 8px 32px rgba(0,0,0,.14);
+animation:avPop .5s cubic-bezier(.2,.9,.3,1)}
+@keyframes avPop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.hero-c .av img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-c .name{font-size:1.375rem;font-weight:700;color:var(--text);
+line-height:1.25;max-width:100%;word-break:break-word;
+animation:fadeUp .45s .08s cubic-bezier(.2,.9,.3,1) backwards}
+.hero-c .phone{font-size:.9375rem;color:var(--text2);
+direction:ltr;font-family:ui-monospace,monospace;
+animation:fadeUp .45s .14s cubic-bezier(.2,.9,.3,1) backwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.section{padding:0 1rem;margin-bottom:.75rem;margin-top:.75rem}
+.section-title{font-size:.6875rem;font-weight:600;color:var(--text2);
+padding:.5rem .375rem .375rem;text-transform:uppercase;letter-spacing:.05em;
+display:flex;align-items:center;justify-content:space-between}
+
+.info-card{background:var(--bg2);border-radius:1rem;padding:.75rem 1rem}
+.info-line{display:flex;align-items:center;justify-content:space-between;
+padding:.5rem 0;border-bottom:1px solid var(--border);gap:.5rem}
+.info-line:last-child{border-bottom:0}
+.info-line .lbl{font-size:.8125rem;color:var(--text2);flex-shrink:0}
+.info-line .val{font-size:.875rem;color:var(--text);font-weight:500;
+max-width:60%;text-align:left;direction:ltr;
+overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+cursor:pointer}
+.info-line .val.mono{font-family:ui-monospace,monospace;font-size:.75rem}
+
+.chan-list{display:flex;flex-direction:column;gap:.375rem}
+.chan-row{display:flex;align-items:center;gap:.75rem;
+padding:.75rem .875rem;background:var(--bg2);border-radius:.875rem;
+transition:background .15s,transform .12s;cursor:pointer;
+animation:rowIn .3s cubic-bezier(.2,.9,.3,1) backwards}
+.chan-row:nth-child(1){animation-delay:0s}
+.chan-row:nth-child(2){animation-delay:.04s}
+.chan-row:nth-child(3){animation-delay:.08s}
+.chan-row:nth-child(4){animation-delay:.12s}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.chan-row:hover{background:var(--bg3)}
+.chan-row:active{transform:scale(.99)}
+.chan-ico{width:2.5rem;height:2.5rem;border-radius:.75rem;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+background:var(--primary-tint);color:var(--primary);
+overflow:hidden}
+.chan-ico img{width:100%;height:100%;object-fit:cover}
+.chan-ico .icon{width:1.25rem;height:1.25rem}
+.chan-body{flex:1;min-width:0}
+.chan-title{font-size:.9375rem;font-weight:500;color:var(--text);
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chan-sub{font-size:.6875rem;color:var(--text2);margin-top:.0625rem;
+direction:ltr;text-align:left;
+font-family:ui-monospace,monospace;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chan-arrow{width:1.125rem;height:1.125rem;color:var(--icon2);
+flex-shrink:0;opacity:.5}
+.empty-mini{padding:1.5rem;text-align:center;color:var(--text2);
+font-size:.8125rem;background:var(--bg2);border-radius:.875rem}
+
+.actions{display:flex;flex-direction:column;gap:.375rem}
+.big-btn{position:relative;display:flex;align-items:center;gap:.875rem;
+padding:.6875rem .875rem;background:var(--bg2);border-radius:.875rem;
+color:var(--text);text-align:right;width:100%;
+transition:background .15s,transform .12s;cursor:pointer}
+.big-btn:hover{background:var(--bg3)}
+.big-btn:active{transform:scale(.99)}
+.big-btn .b-ico{width:2rem;height:2rem;border-radius:.625rem;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+background:var(--primary-tint);color:var(--primary)}
+.big-btn .b-ico .icon{width:1rem;height:1rem}
+.big-btn .b-title{flex:1;min-width:0;font-size:.9375rem;font-weight:500;color:var(--text)}
+.big-btn .b-arrow{width:1rem;height:1rem;color:var(--icon2);flex-shrink:0;opacity:.5}
+.big-btn.danger .b-ico{background:rgba(229,57,53,.12);color:var(--danger)}
+.big-btn.danger .b-title{color:var(--danger)}
+.big-btn.success .b-ico{background:rgba(34,197,94,.12);color:var(--success)}
+.big-btn.success .b-title{color:var(--success)}
+.big-btn.loading{opacity:.7;cursor:wait;pointer-events:none}
+
+/* Sheet */
+.sheet-backdrop{position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,.45);
+opacity:0;visibility:hidden;transition:opacity .28s,visibility 0s linear .28s}
+.sheet-backdrop.open{opacity:1;visibility:visible;
+transition:opacity .28s,visibility 0s linear 0s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11001;
+background:var(--bg);border-radius:1.75rem 1.75rem 0 0;
+box-shadow:0 -12px 48px rgba(0,0,0,.18);
+transform:translateY(100%);display:flex;flex-direction:column;
+height:auto;max-height:90dvh;will-change:transform;
+transition:transform .35s cubic-bezier(.2,.9,.3,1);
+padding-bottom:var(--safe-bottom);overflow:hidden}
+.sheet.open{transform:translateY(0)}
+.sheet-grip{padding:.75rem 0 .25rem;display:flex;justify-content:center}
+.sheet-grip .bar{width:2.5rem;height:.3125rem;border-radius:999px;background:var(--divider)}
+.sheet-head{padding:.25rem 1.25rem .75rem;flex-shrink:0;
+display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+border-bottom:1px solid var(--border)}
+.sheet-head .s-title{font-size:1.125rem;font-weight:600;color:var(--text)}
+.sheet-head .s-close{width:2rem;height:2rem;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+color:var(--icon2);transition:background .15s,color .15s}
+.sheet-head .s-close:hover{background:var(--primary-tint);color:var(--primary)}
+.sheet-body{flex:1;min-height:0;overflow-y:auto;padding:1rem 1.25rem 1rem}
+.form-field{margin-bottom:1rem}
+.form-field label{display:block;font-size:.75rem;font-weight:600;
+color:var(--text2);margin-bottom:.375rem}
+.form-field input,.form-field textarea{width:100%;padding:.75rem 1rem;
+background:var(--bg2);border-radius:.875rem;font-size:.9375rem;
+color:var(--text);border:1.5px solid transparent;
+transition:border-color .15s,background .15s}
+.form-field input:focus,.form-field textarea:focus{
+  border-color:var(--primary);background:var(--bg)}
+.form-field textarea{resize:none;font-family:inherit;min-height:4.5rem}
+.sheet-actions{padding:.75rem 1.25rem 1.25rem;display:flex;gap:.5rem;
+border-top:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.sheet-actions button{flex:1;height:3rem;border-radius:1.5rem;
+font-size:.9375rem;font-weight:600;transition:background .15s,transform .12s}
+.sheet-actions .btn-cancel{background:var(--bg2);color:var(--text)}
+.sheet-actions .btn-cancel:hover{background:var(--bg3)}
+.sheet-actions .btn-submit{background:var(--primary);color:#fff}
+.sheet-actions button:active{transform:scale(.98)}
+.sheet-actions button.loading{opacity:.7;cursor:wait;pointer-events:none}
+
+.code-sent-banner{display:flex;align-items:center;gap:.625rem;
+padding:.75rem .875rem;border-radius:.875rem;
+background:var(--primary-tint);color:var(--primary);
+font-size:.8125rem;font-weight:500;line-height:1.4;margin-bottom:1rem}
+.code-sent-banner .b-ico{width:2rem;height:2rem;border-radius:.625rem;
+flex-shrink:0;display:flex;align-items:center;justify-content:center;
+background:var(--bg);color:var(--primary)}
+.hint-text{font-size:.75rem;color:var(--text2);margin-top:.375rem;line-height:1.5}
+
+/* Type selector (private/public) */
+.type-select{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}
+.type-opt{display:flex;align-items:center;gap:.75rem;
+padding:.875rem .875rem;background:var(--bg2);border-radius:.875rem;
+cursor:pointer;transition:background .15s,border-color .15s;
+border:2px solid transparent}
+.type-opt:hover{background:var(--bg3)}
+.type-opt.sel{border-color:var(--primary);background:var(--primary-tint)}
+.type-opt .t-ico{width:2.25rem;height:2.25rem;border-radius:.625rem;
+display:flex;align-items:center;justify-content:center;flex-shrink:0;
+background:var(--bg);color:var(--primary)}
+.type-opt.sel .t-ico{background:var(--primary);color:#fff}
+.type-opt .t-body{flex:1;min-width:0}
+.type-opt .t-title{font-size:.9375rem;font-weight:600;color:var(--text)}
+.type-opt .t-desc{font-size:.75rem;color:var(--text2);margin-top:.125rem;
+line-height:1.4}
+.type-opt .t-check{width:1.25rem;height:1.25rem;color:var(--primary);
+opacity:0;transition:opacity .15s;flex-shrink:0}
+.type-opt.sel .t-check{opacity:1}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.45);
+display:flex;align-items:center;justify-content:center;padding:1rem;
+opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s linear .2s}
+.modal-backdrop.open{opacity:1;visibility:visible;
+transition:opacity .2s,visibility 0s linear 0s}
+.modal{width:100%;max-width:22rem;background:var(--bg);border-radius:1.5rem;
+box-shadow:0 12px 40px rgba(0,0,0,.25);transform:scale(.94);
+transition:transform .25s cubic-bezier(.2,.9,.3,1);overflow:hidden}
+.modal-backdrop.open .modal{transform:scale(1)}
+.modal-head{padding:1.25rem 1.5rem .5rem;font-size:1.125rem;font-weight:600}
+.modal-body{padding:.25rem 1.5rem 1rem;font-size:.9375rem;color:var(--text2);line-height:1.55}
+.modal-actions{display:flex;justify-content:flex-end;gap:.25rem;padding:.5rem 1rem 1rem}
+.btn-t{height:2.5rem;padding:0 1.25rem;border-radius:1.75rem;
+font-size:.9375rem;font-weight:500;color:var(--primary);
+display:inline-flex;align-items:center;justify-content:center}
+.btn-t:hover{background:var(--primary-tint)}
+.btn-t.danger{color:var(--danger)}
+.btn-t.danger:hover{background:rgba(229,57,53,.1)}
+
+.toast-wrap{position:fixed;top:calc(.75rem + var(--safe-top));left:0;right:0;
+z-index:20000;display:flex;flex-direction:column;align-items:center;
+gap:.5rem;pointer-events:none;padding:0 .75rem}
+.toast{display:flex;align-items:center;gap:.625rem;max-width:22rem;
+padding:.875rem 1rem;border-radius:1rem;background:#1c1c1eff;color:#fff;
+font-size:.9375rem;line-height:1.3;animation:toastIn .25s}
+.toast.out{opacity:0;transform:translateY(-.5rem);transition:opacity .2s,transform .2s}
+@keyframes toastIn{from{opacity:0;transform:translateY(-.75rem)}to{opacity:1;transform:none}}
+
+.sk{background:linear-gradient(90deg,var(--bg2) 0%,
+  color-mix(in srgb,var(--bg2) 60%,var(--text2) 8%) 50%,var(--bg2) 100%);
+background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite;
+border-radius:.5rem}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-hero{padding:2rem 1.25rem;display:flex;flex-direction:column;
+align-items:center;gap:.75rem;border-bottom:1px solid var(--border)}
+.sk-av{width:6.5rem;height:6.5rem;border-radius:50%}
+.sk-line{height:1rem;width:50%;border-radius:.5rem}
+.sk-sec{padding:0 1rem;margin-top:1rem}
+.sk-t{height:.75rem;width:30%;border-radius:.5rem;margin-bottom:.5rem}
+.sk-row{height:3rem;border-radius:.875rem;margin-bottom:.375rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="TopBar" id="top"></div>
+  <div class="scroll" id="scroll">
+    <div id="content"></div>
+  </div>
+</div>
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-grip"><div class="bar"></div></div>
+  <div class="sheet-head">
+    <div class="s-title" id="sheetTitle"></div>
+    <button class="s-close" id="sheetClose">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+    </button>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+  <div class="sheet-actions" id="sheetActions"></div>
+</div>
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalBox"></div></div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+"use strict";
+(function(){
+  try{ if(localStorage.getItem("rb_theme")==="dark") document.documentElement.classList.add("theme-dark"); }catch(e){}
+  var $=function(s,r){return (r||document).querySelector(s)};
+  function h(t,a){var k=Array.prototype.slice.call(arguments,2);var e=document.createElement(t);
+    for(var key in (a||{})){var v=a[key];if(v==null||v===false)continue;
+      if(key==="class")e.className=v;
+      else if(key==="html")e.innerHTML=v;
+      else if(key==="style")e.setAttribute("style",v);
+      else if(key.indexOf("on")===0&&typeof v==="function")e.addEventListener(key.slice(2),v);
+      else e.setAttribute(key,v);}
+    k.forEach(function(x){(Array.isArray(x)?x:[x]).forEach(function(y){
+      if(y==null||y===false)return;e.append(y.nodeType?y:document.createTextNode(String(y)));});});
+    return e;}
+  function svgp(p){return '<span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg></span>'}
+  var ICON={
+    back:svgp('<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>'),
+    plus:svgp('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
+    redo:svgp('<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>'),
+    logout:svgp('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'),
+    broadcast:svgp('<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>'),
+    lock:svgp('<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+    globe:svgp('<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'),
+    check:svgp('<polyline points="20 6 9 17 4 12"/>'),
+    arrow:svgp('<polyline points="15 18 9 12 15 6"/>'),
+    user:svgp('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    copy:svgp('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+    send:svgp('<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>'),
+    alert:svgp('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>')
+  };
+  var PEER=[["#FF845E","#D45246"],["#FEBB5B","#F68136"],["#B694F9","#6C61DF"],
+    ["#9AD164","#46BA43"],["#53EDD6","#28C9B7"],["#5CAFFA","#408ACF"],["#FF8AAC","#D95574"]];
+  function avatarBg(s){var x=0;for(var i=0;i<(s||"").length;i++)x=(x*31+s.charCodeAt(i))|0;
+    var p=PEER[Math.abs(x)%PEER.length];return "linear-gradient(180deg,"+p[0]+" 0%,"+p[1]+" 100%)"}
+  function initials(name){if(!name)return "?";var p=String(name).trim().split(/[\s\u200c]+/).filter(Boolean);
+    if(!p.length)return "?";return p.length>=2?(Array.from(p[0])[0]||"")+(Array.from(p[1])[0]||""):
+      Array.from(p[0]).slice(0,2).join("")}
+  function Token(){try{return localStorage.getItem("rb_token")}catch(e){return null}}
+  function toast(msg){var t=h("div",{class:"toast"},h("span",null,String(msg)));
+    $("#toastWrap").append(t);setTimeout(function(){t.classList.add("out");
+      setTimeout(function(){t.remove()},220)},2400)}
+  function authHeaders(){var t=Token();return t?{"Authorization":"Bearer "+t}:{}}
+  var API={
+    get:async function(p){var r=await fetch(p,{credentials:"same-origin",headers:authHeaders()});
+      if(r.status===401){location.href="/login";throw new Error("unauth")}
+      var j=await r.json().catch(function(){return {}});
+      if(!r.ok)throw new Error((j.detail&&typeof j.detail==="string")?j.detail:("HTTP "+r.status));
+      return j},
+    post:async function(p,b){var hd=Object.assign({"Content-Type":"application/json"},authHeaders());
+      var r=await fetch(p,{method:"POST",credentials:"same-origin",headers:hd,body:JSON.stringify(b||{})});
+      if(r.status===401){location.href="/login";throw new Error("unauth")}
+      var j=await r.json().catch(function(){return {}});
+      if(!r.ok)throw new Error((j.detail&&typeof j.detail==="string")?j.detail:("HTTP "+r.status));
+      return j},
+    del:async function(p){var r=await fetch(p,{method:"DELETE",credentials:"same-origin",headers:authHeaders()});
+      if(r.status===401){location.href="/login";throw new Error("unauth")}
+      var j=await r.json().catch(function(){return {}});
+      if(!r.ok)throw new Error((j.detail&&typeof j.detail==="string")?j.detail:("HTTP "+r.status));
+      return j}
+  };
+
+  var parts=location.pathname.split("/").filter(Boolean);
+  var AID=(parts[0]==="manage"&&parts[1])?decodeURIComponent(parts[1]):
+          (parts[0]==="account"&&parts[1])?decodeURIComponent(parts[1]):
+          (new URLSearchParams(location.search).get("aid")||"");
+  if(!AID){location.href="/accounts";return}
+
+  var current=null, profile={}, channels=[];
+
+  var Sheet=(function(){
+    var el,bd,titleEl,bodyEl,actionsEl;
+    function open(title,body,actions){
+      titleEl.textContent=title||"";
+      bodyEl.innerHTML="";
+      if(typeof body==="string")bodyEl.innerHTML=body;
+      else if(body)bodyEl.append(body);
+      actionsEl.innerHTML="";
+      (actions||[]).forEach(function(a){
+        var b=h("button",{class:a.kind==="submit"?"btn-submit":"btn-cancel"},a.label);
+        b.onclick=async function(){
+          if(b.classList.contains("loading")) return;
+          if(!a.onClick) return;
+          var orig = b.textContent;
+          b.classList.add("loading");
+          b.disabled = true;
+          if(a.loadingText) b.textContent = a.loadingText;
+          try{ await Promise.resolve(a.onClick()); }
+          catch(err){ console.error(err); }
+          finally{
+            setTimeout(function(){
+              if(document.body.contains(b)){
+                b.classList.remove("loading");
+                b.disabled = false;
+                b.textContent = orig;
+              }
+            }, 100);
+          }
+        };
+        actionsEl.append(b);
+      });
+      actionsEl.style.display=(actions&&actions.length)?"flex":"none";
+      el.style.transition="none";
+      el.style.transform="translateY(100%)";
+      bd.classList.add("open");
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          el.classList.add("open");
+          el.style.transition="transform .35s cubic-bezier(.2,.9,.3,1)";
+          el.style.transform="translateY(0)";
+        });
+      });
+    }
+    function close(){
+      bd.classList.remove("open");
+      el.classList.remove("open");
+      el.style.transition="transform .3s cubic-bezier(.2,.9,.3,1)";
+      el.style.transform="translateY(100%)";
+    }
+    function init(){
+      el=$("#sheet");bd=$("#sheetBackdrop");
+      titleEl=$("#sheetTitle");bodyEl=$("#sheetBody");actionsEl=$("#sheetActions");
+      $("#sheetClose").onclick=close;
+      bd.onclick=close;
+      document.addEventListener("keydown",function(e){
+        if(e.key==="Escape"&&bd.classList.contains("open"))close();
+      });
+    }
+    return {init:init,open:open,close:close};
+  })();
+
+  function openModal(opts){
+    var box=$("#modalBox");box.innerHTML="";
+    if(opts.title)box.append(h("div",{class:"modal-head"},opts.title));
+    var body=h("div",{class:"modal-body"});
+    if(typeof opts.content==="string")body.innerHTML=opts.content;
+    else if(opts.content)body.append(opts.content);
+    box.append(body);
+    var actions=opts.actions||[];
+    if(actions.length){
+      var acts=h("div",{class:"modal-actions"});
+      actions.forEach(function(a){
+        var b=h("button",{class:"btn-t "+(a.kind||"")},a.label);
+        b.onclick=function(){closeModal();if(a.onClick)setTimeout(a.onClick,150)};
+        acts.append(b);
+      });
+      box.append(acts);
+    }
+    var bd=$("#modalBackdrop");bd.classList.add("open");
+    bd.onclick=function(e){if(e.target===bd)closeModal()};
+  }
+  function closeModal(){$("#modalBackdrop").classList.remove("open")}
+
+  function copyText(txt,label){
+    if(!txt)return;
+    try{navigator.clipboard.writeText(txt);toast((label||"متن")+" کپی شد")}
+    catch(e){
+      var ta=document.createElement("textarea");ta.value=txt;document.body.append(ta);
+      ta.select();try{document.execCommand("copy")}catch(_){}
+      ta.remove();toast((label||"متن")+" کپی شد");
+    }
+  }
+
+  function withLoading(btn,fn,loadingText){
+    return async function(e){
+      if(btn.classList.contains("loading")) return;
+      var titleEl = btn.querySelector(".b-title") || btn;
+      var origText = titleEl.textContent;
+      btn.classList.add("loading");
+      btn.disabled = true;
+      if(loadingText) titleEl.textContent = loadingText;
+      try{ return await fn(e); }
+      finally{
+        btn.classList.remove("loading");
+        btn.disabled = false;
+        titleEl.textContent = origText;
+      }
+    };
+  }
+
+  function bigBtn(icon,title,onClick,danger,success,loadingText){
+    var b=h("button",{class:"big-btn"+(danger?" danger":"")+(success?" success":"")},
+      h("div",{class:"b-ico",html:icon}),
+      h("div",{class:"b-title"},title),
+      h("span",{class:"b-arrow"}));
+    b.onclick=withLoading(b,onClick,loadingText);
+    return b;
+  }
+
+  function buildTop(){
+    var bar=$("#top");bar.innerHTML="";
+    var back=h("button",{class:"icon-btn",html:ICON.back,title:"بازگشت"});
+    back.onclick=function(){location.href="/settings/"+encodeURIComponent(AID)};
+    bar.append(back,h("div",{class:"title"},"مدیریت اکانت"),h("div",{style:"width:2.5rem"}));
+  }
+
+  function showSkeleton(){
+    var c=$("#content");c.innerHTML="";
+    c.append(h("div",{class:"sk-hero"},
+      h("div",{class:"sk sk-av"}),
+      h("div",{class:"sk sk-line",style:"width:40%"}),
+      h("div",{class:"sk sk-line",style:"width:30%;height:.75rem"})));
+    [1,2,3].forEach(function(){
+      var s=h("div",{class:"sk-sec"},
+        h("div",{class:"sk sk-t"}),
+        h("div",{class:"sk sk-row"}),
+        h("div",{class:"sk sk-row"}));
+      c.append(s);
+    });
+  }
+
+  function buildHero(){
+    var av=h("div",{class:"av",style:"background:"+avatarBg(AID)});
+    var img=document.createElement("img");
+    img.referrerPolicy="no-referrer";img.alt="";
+    var tries=0;
+    function load(){
+      tries++;
+      img.src="/api/accounts/"+encodeURIComponent(AID)+"/avatar/"+
+              encodeURIComponent(current.user_guid||AID)+"?v="+Date.now()+"&r="+tries;
+    }
+    img.onerror=function(){
+      if(tries<2){setTimeout(load,300);return}
+      img.remove();
+      av.textContent=initials(current.name||"");
+    };
+    load();
+    av.append(img);
+    return h("div",{class:"hero-c"},
+      av,
+      h("div",{class:"name"},current.name||"بدون نام"),
+      current.phone?h("div",{class:"phone"},current.phone):null);
+  }
+
+  function buildInfo(){
+    var sec=h("div",{class:"section"});
+    sec.append(h("div",{class:"section-title"},"اطلاعات اکانت"));
+    var card=h("div",{class:"info-card"});
+    function line(lbl,val,mono){
+      if(!val)return null;
+      var v=h("span",{class:"val"+(mono?" mono":"")},val);
+      v.onclick=function(){copyText(val,lbl)};
+      return h("div",{class:"info-line"},
+        h("span",{class:"lbl"},lbl),
+        v);
+    }
+    card.append(line("نام",profile.first_name||current.name||""));
+    card.append(line("نام خانوادگی",profile.last_name||""));
+    card.append(line("نام کاربری",profile.username?("@"+profile.username.replace(/^@/,"")):""));
+    card.append(line("شماره",current.phone||"",true));
+    card.append(line("شناسه کاربری",current.user_guid||"",true));
+    card.append(line("شناسه پنل",current.id||"",true));
+    sec.append(card);
+    return sec;
+  }
+
+  function buildChannels(){
+    var sec=h("div",{class:"section"});
+    var title=h("div",{class:"section-title"});
+    title.append(h("span",null,"کانال‌ها ("+(channels.length||0)+")"));
+    sec.append(title);
+
+    if(!channels.length){
+      sec.append(h("div",{class:"empty-mini"},"هنوز کانالی اضافه نشده"));
+    }else{
+      var list=h("div",{class:"chan-list"});
+      channels.forEach(function(ch){
+        var t=ch.title||ch.username||ch.guid||"کانال";
+        var sub=ch.username?("@"+String(ch.username).replace(/^@/,"")):(ch.guid||"");
+        var ico;
+        if(ch.guid){
+          var im=document.createElement("img");
+          im.referrerPolicy="no-referrer";im.alt="";
+          im.src="/api/accounts/"+encodeURIComponent(AID)+"/avatar/"+encodeURIComponent(ch.guid);
+          ico=h("div",{class:"chan-ico"},im);
+          im.onerror=function(){
+            var p=this.parentNode;
+            p.innerHTML="";
+            p.style.background=avatarBg(ch.guid);
+            p.style.color="#fff";
+            p.textContent=initials(t).slice(0,2);
+            p.style.fontFamily="var(--font-round)";
+            p.style.fontWeight="700";
+          };
+        }else{
+          ico=h("div",{class:"chan-ico",html:ICON.broadcast});
+        }
+        var row=h("div",{class:"chan-row"},
+          ico,
+          h("div",{class:"chan-body"},
+            h("div",{class:"chan-title"},t),
+            sub?h("div",{class:"chan-sub"},sub):null),
+          h("span",{class:"chan-arrow",html:ICON.arrow}));
+        row.onclick=function(){
+          location.href="/channel/"+encodeURIComponent(AID)+"/"+encodeURIComponent(ch.guid||"");
+        };
+        list.append(row);
+      });
+      sec.append(list);
+    }
+    return sec;
+  }
+
+  function buildActions(){
+    var sec=h("div",{class:"section"});
+    sec.append(h("div",{class:"section-title"},"عملیات"));
+    var btns=h("div",{class:"actions"});
+    btns.append(bigBtn(ICON.plus,"افزودن کانال",addChannel,false,false,"در حال باز کردن..."));
+    btns.append(bigBtn(ICON.redo,"ورود مجدد",relogin,false,true));
+    btns.append(bigBtn(ICON.logout,"خروج",logoutAccount,true));
+    sec.append(btns);
+    return sec;
+  }
+
+  function render(){
+    var c=$("#content");c.innerHTML="";
+    c.append(buildHero());
+    c.append(buildInfo());
+    c.append(buildChannels());
+    c.append(buildActions());
+  }
+
+  // ═══ Add Channel with type selector ═══
+  function addChannel(){
+    var titleInp=h("input",{placeholder:"نام کانال"});
+    var descInp=h("textarea",{placeholder:"توضیحات (اختیاری)"});
+    var selected = "private";
+
+    function typeOpt(value, icon, title, desc){
+      var opt=h("div",{class:"type-opt"+(selected===value?" sel":"")},
+        h("div",{class:"t-ico",html:icon}),
+        h("div",{class:"t-body"},
+          h("div",{class:"t-title"},title),
+          h("div",{class:"t-desc"},desc)),
+        h("span",{class:"t-check",html:ICON.check}));
+      opt.onclick=function(){
+        selected = value;
+        var opts = opt.parentNode.querySelectorAll(".type-opt");
+        for(var i=0;i<opts.length;i++) opts[i].classList.remove("sel");
+        opt.classList.add("sel");
+      };
+      return opt;
+    }
+
+    var typeWrap=h("div",{class:"type-select"},
+      typeOpt("private", ICON.lock, "کانال خصوصی",
+        "فقط با لینک دعوت قابل دسترسی است"),
+      typeOpt("public", ICON.globe, "کانال عمومی",
+        "با یه یوزرنیم قابل جستجو می‌شود"));
+
+    var body=h("div");
+    body.append(h("label",{style:"font-size:.75rem;font-weight:600;color:var(--text2);display:block;margin-bottom:.5rem"},"نوع کانال"));
+    body.append(typeWrap);
+    body.append(field("نام کانال",titleInp));
+    body.append(field("توضیحات",descInp));
+
+    Sheet.open("افزودن کانال", body, [
+      {label:"انصراف",kind:"cancel",onClick:function(){Sheet.close()}},
+      {label:"ساخت",kind:"submit",loadingText:"در حال ساخت...",onClick:async function(){
+        var t=titleInp.value.trim();
+        if(!t){toast("نام را وارد کن");return}
+        try{
+          var r=await API.post("/api/accounts/"+encodeURIComponent(AID)+"/channels",
+            {title:t, description:descInp.value.trim(), type:selected});
+          toast("کانال ساخته شد");
+          Sheet.close();
+          setTimeout(load,600);
+        }catch(e){toast(e.message||"خطا")}
+      }}
+    ]);
+    setTimeout(function(){try{titleInp.focus()}catch(e){}},200);
+  }
+
+  async function relogin(){
+    openModal({title:"ورود مجدد؟",
+      content:"این اکانت از نو لاگین می‌شود. session فعلی پاک می‌شود.",
+      actions:[{label:"لغو"},{label:"ادامه",onClick:startRelogin}]});
+  }
+
+  async function startRelogin(){
+    try{
+      var r=await API.post("/api/accounts/"+encodeURIComponent(AID)+"/relogin");
+      if(r.need_passkey){toast("این اکانت رمز دوم دارد — از ربات تلگرام استفاده کن");return}
+      var codeInp=h("input",{placeholder:"کد تایید",inputmode:"numeric",dir:"ltr",maxlength:"8"});
+      codeInp.style.textAlign="center";
+      codeInp.style.fontFamily="ui-monospace,monospace";
+      codeInp.style.letterSpacing=".15em";
+      codeInp.style.fontSize="1.125rem";
+      var body=h("div");
+      body.append(h("div",{class:"code-sent-banner"},
+        h("div",{class:"b-ico",html:ICON.send}),
+        h("div",null,"کد به شماره "+current.phone+" ارسال شد")));
+      body.append(field("کد تایید",codeInp));
+      Sheet.open("تایید ورود",body,[
+        {label:"انصراف",kind:"cancel",onClick:function(){Sheet.close()}},
+        {label:"تایید",kind:"submit",loadingText:"در حال ثبت...",onClick:async function(){
+          var c=codeInp.value.trim();
+          if(!c){toast("کد را وارد کن");return}
+          try{
+            await API.post("/api/accounts/verify",{code:c});
+            toast("ورود موفق");
+            Sheet.close();
+            setTimeout(function(){location.reload()},700);
+          }catch(e){toast(e.message||"کد اشتباه")}
+        }}
+      ]);
+      setTimeout(function(){try{codeInp.focus()}catch(e){}},200);
+    }catch(e){toast(e.message||"خطا")}
+  }
+
+  function logoutAccount(){
+    openModal({title:"خروج از این اکانت؟",
+      content:"اکانت "+((current&&current.name)||AID)+" از پنل حذف می‌شود.",
+      actions:[{label:"لغو"},{label:"خروج",kind:"danger",onClick:async function(){
+        try{
+          await API.del("/api/accounts/"+encodeURIComponent(AID));
+          toast("حذف شد");
+          setTimeout(function(){location.href="/accounts"},500);
+        }catch(e){toast(e.message||"خطا")}
+      }}]});
+  }
+
+  function field(label,inp){
+    var w=h("div",{class:"form-field"});
+    w.append(h("label",null,label),inp);
+    return w;
+  }
+
+  async function load(){
+    showSkeleton();
+    try{
+      var r=await API.get("/api/accounts");
+      var accounts=r.accounts||[];
+      current=accounts.find(function(a){return String(a.id)===String(AID)})||null;
+      if(!current){location.href="/accounts";return}
+      try{profile=await API.get("/api/accounts/"+encodeURIComponent(AID)+"/profile")}
+      catch(e){profile={}}
+      try{
+        var ch=await API.get("/api/accounts/"+encodeURIComponent(AID)+"/channels");
+        channels=ch.channels||[];
+      }catch(e){channels=[]}
+      document.title="مدیریت — "+(current.name||"اکانت");
+      buildTop();
+      render();
+    }catch(e){
+      $("#content").innerHTML='<div style="padding:3rem;text-align:center;color:var(--text2)">'+
+        String(e.message||e)+'</div>';
+    }
+  }
+
+  Sheet.init();
+  load();
+})();
+</script>
+</body>
+</html>

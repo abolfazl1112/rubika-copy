@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>ارسال پیام</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f1f1f3;--bg3:#e7e7ea;--text:#0f0f10;--text2:#707579;--icon2:#707579;
+--meta:#8b8f95;--border:#e6e8ec;--divider:#d5d9df;--primary:#3390ec;
+--primary-tint:rgba(51,144,236,.1);--placeholder:#a2acb4;--error:#e53935;--success:#22c55e;
+--font:"Vazirmatn",-apple-system,system-ui,sans-serif;
+--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+html.theme-dark{--bg:#18191c;--bg2:#232529;--bg3:#2b2e33;--text:#f3f4f6;--text2:#a9adb4;
+--icon2:#a9adb4;--meta:#82868d;--border:#2b2e33;--divider:#3a3e45;
+--primary:#a08eff;--primary-tint:rgba(160,142,255,.14);color-scheme:dark}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);font-size:15px;line-height:1.5;color:var(--text);background:var(--bg);
+-webkit-font-smoothing:antialiased;direction:rtl}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;outline:none;padding:0}
+input,textarea,select{font:inherit;color:inherit;outline:none;border:0;background:none}
+.icon{display:inline-flex;width:1.25rem;height:1.25rem;flex-shrink:0}
+.icon svg{width:100%;height:100%;display:block}
+.app{display:flex;flex-direction:column;height:100dvh}
+.TopBar{display:flex;align-items:center;gap:.5rem;padding:.75rem;
+padding-top:calc(.75rem + var(--safe-top));
+background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+.TopBar .title{flex:1;font-size:1.0625rem;font-weight:600}
+.TopBar .back{width:2.25rem;height:2.25rem;border-radius:50%;display:flex;
+align-items:center;justify-content:center;color:var(--icon2)}
+.TopBar .back:hover{background:var(--primary-tint);color:var(--primary)}
+.scroll{flex:1;min-height:0;overflow-y:auto;padding:1rem;padding-bottom:3rem;
+max-width:720px;width:100%;margin:0 auto}
+.card{background:var(--bg2);border-radius:1rem;padding:1rem 1.125rem;margin-bottom:1rem;
+animation:fu .3s cubic-bezier(.2,.9,.3,1)}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card-title{font-size:.75rem;font-weight:600;color:var(--text2);
+margin-bottom:.75rem;letter-spacing:.03em;text-transform:uppercase;
+display:flex;align-items:center;justify-content:space-between}
+.card-title .hint{font-weight:400;text-transform:none;font-size:.6875rem}
+
+/* Accounts checkboxes */
+.acc-list{display:flex;flex-direction:column;gap:.5rem;max-height:16rem;overflow-y:auto;
+padding:.25rem}
+.acc-row{display:flex;align-items:center;gap:.75rem;padding:.625rem .75rem;
+background:var(--bg);border-radius:.75rem;cursor:pointer;
+border:1.5px solid transparent;transition:border-color .15s,background .15s}
+.acc-row:hover{background:var(--bg3)}
+.acc-row.sel{border-color:var(--primary);background:var(--primary-tint)}
+.acc-row .checkbox{width:1.25rem;height:1.25rem;border-radius:.375rem;
+border:2px solid var(--divider);flex-shrink:0;position:relative;
+transition:background .15s,border-color .15s}
+.acc-row.sel .checkbox{background:var(--primary);border-color:var(--primary)}
+.acc-row.sel .checkbox::after{content:"";position:absolute;inset:0;margin:auto;
+width:.375rem;height:.625rem;border:solid #fff;border-width:0 2px 2px 0;
+transform:rotate(45deg) translate(-1px,-2px)}
+.acc-row .info{flex:1;min-width:0}
+.acc-row .name{font-size:.9375rem;font-weight:500;white-space:nowrap;
+overflow:hidden;text-overflow:ellipsis}
+.acc-row .phone{font-size:.75rem;color:var(--text2);direction:ltr;
+font-family:ui-monospace,monospace}
+.acc-row .ch-count{font-size:.6875rem;color:var(--meta);
+background:var(--bg3);padding:.125rem .4375rem;border-radius:.5rem}
+.select-all{padding:.5rem .75rem;background:var(--primary-tint);color:var(--primary);
+border-radius:.75rem;font-size:.8125rem;font-weight:500;text-align:center;
+cursor:pointer;margin-bottom:.5rem}
+
+/* Form fields */
+.field{margin-bottom:.875rem}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:.75rem;font-weight:600;color:var(--text2);
+margin-bottom:.375rem}
+.field input[type="text"],.field input[type="datetime-local"],.field textarea{
+width:100%;padding:.75rem 1rem;background:var(--bg);border-radius:.75rem;
+border:1.5px solid transparent;font-size:.9375rem;color:var(--text);
+font-family:inherit;transition:border-color .15s}
+.field input:focus,.field textarea:focus{border-color:var(--primary)}
+.field textarea{resize:none;min-height:6rem;line-height:1.6}
+.field .hint{font-size:.6875rem;color:var(--text2);margin-top:.25rem}
+
+/* Type pills */
+.type-group{display:flex;gap:.5rem;flex-wrap:wrap}
+.type-pill{flex:1;min-width:6rem;padding:.75rem .5rem;background:var(--bg);
+border-radius:.75rem;border:1.5px solid transparent;text-align:center;
+font-size:.875rem;font-weight:500;cursor:pointer;
+transition:border-color .15s,background .15s}
+.type-pill:hover{background:var(--bg3)}
+.type-pill.sel{border-color:var(--primary);background:var(--primary-tint);color:var(--primary)}
+.type-pill .ic{display:block;margin:0 auto .25rem;width:1.5rem;height:1.5rem}
+
+/* File upload */
+.file-drop{border:2px dashed var(--divider);border-radius:.75rem;
+padding:1.25rem;text-align:center;color:var(--text2);cursor:pointer;
+transition:border-color .15s,background .15s}
+.file-drop:hover,.file-drop.drag{border-color:var(--primary);background:var(--primary-tint)}
+.file-drop .ic{width:2rem;height:2rem;color:var(--primary);margin:0 auto .5rem}
+.file-drop .main{font-size:.875rem;font-weight:500;color:var(--text);margin-bottom:.125rem}
+.file-drop .sub{font-size:.6875rem}
+.file-picked{display:flex;align-items:center;gap:.75rem;padding:.75rem;
+background:var(--bg);border-radius:.75rem}
+.file-picked .ic{width:1.75rem;height:1.75rem;color:var(--primary);flex-shrink:0}
+.file-picked .body{flex:1;min-width:0}
+.file-picked .fname{font-size:.875rem;font-weight:500;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-picked .fsize{font-size:.6875rem;color:var(--text2)}
+.file-picked .rm{width:1.75rem;height:1.75rem;border-radius:50%;display:flex;
+align-items:center;justify-content:center;color:var(--error);
+background:rgba(229,57,53,.1);flex-shrink:0}
+.file-picked .rm:hover{background:rgba(229,57,53,.2)}
+
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;
+width:100%;height:3rem;border-radius:1.5rem;font-size:.9375rem;
+font-weight:600;transition:background .15s,transform .12s;cursor:pointer}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.primary:hover{background:color-mix(in srgb,var(--primary) 88%,#000)}
+.btn.ghost{background:var(--bg2);color:var(--text);margin-top:.5rem}
+.btn.ghost:hover{background:var(--bg3)}
+.btn.danger{background:rgba(229,57,53,.15);color:var(--error)}
+.btn.danger:hover{background:rgba(229,57,53,.25)}
+.btn:disabled{opacity:.5;pointer-events:none}
+
+/* Progress */
+.progress{height:.5rem;background:var(--bg3);border-radius:1rem;overflow:hidden;
+margin:.5rem 0}
+.progress .bar{height:100%;background:var(--primary);border-radius:inherit;
+transition:width .3s cubic-bezier(.2,.9,.3,1)}
+.progress-text{font-size:.75rem;color:var(--text2);text-align:center;
+margin-top:.25rem;font-variant-numeric:tabular-nums}
+
+/* Analysis result */
+.result-row{display:flex;justify-content:space-between;align-items:center;
+padding:.5rem 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:0}
+.result-row .lbl{font-size:.8125rem;color:var(--text2)}
+.result-row .val{font-size:.9375rem;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Steps */
+.step-indicator{display:flex;align-items:center;justify-content:center;
+gap:.5rem;margin-bottom:1rem}
+.step-dot{width:2rem;height:2rem;border-radius:50%;background:var(--bg2);
+display:flex;align-items:center;justify-content:center;
+font-size:.8125rem;font-weight:600;color:var(--text2);
+border:2px solid transparent;transition:background .2s,border-color .2s}
+.step-dot.active{background:var(--primary);color:#fff}
+.step-dot.done{background:var(--success);color:#fff;border-color:var(--success)}
+.step-line{width:2rem;height:2px;background:var(--bg3)}
+.step-line.done{background:var(--success)}
+
+/* Toast */
+.toast-wrap{position:fixed;top:calc(.75rem + var(--safe-top));left:0;right:0;
+z-index:9999;display:flex;flex-direction:column;align-items:center;
+gap:.5rem;pointer-events:none;padding:0 .75rem}
+.toast{display:flex;align-items:center;gap:.625rem;max-width:22rem;
+padding:.75rem 1rem;border-radius:.875rem;background:#1c1c1eff;color:#fff;
+font-size:.875rem;animation:ti .2s}
+.toast.err{background:#7f1d1dee}
+.toast.ok{background:#14532dee}
+.toast.out{opacity:0;transform:translateY(-.5rem);transition:opacity .2s,transform .2s}
+@keyframes ti{from{opacity:0;transform:translateY(-.75rem)}to{opacity:1;transform:none}}
+
+.spinner{width:1.25rem;height:1.25rem;border:2px solid rgba(255,255,255,.3);
+border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="TopBar">
+    <button class="back" id="backBtn" title="بازگشت">◀</button>
+    <div class="title">ارسال پیام</div>
+  </div>
+
+  <div class="scroll" id="scroll">
+
+    <!-- Step indicator -->
+    <div class="step-indicator" id="steps">
+      <div class="step-dot active" data-step="1">۱</div>
+      <div class="step-line" data-line="1"></div>
+      <div class="step-dot" data-step="2">۲</div>
+      <div class="step-line" data-line="2"></div>
+      <div class="step-dot" data-step="3">۳</div>
+    </div>
+
+    <!-- ══ STEP 1: setup ══ -->
+    <div id="step1">
+      <!-- Accounts -->
+      <div class="card">
+        <div class="card-title">
+          <span>حساب‌ها</span>
+          <span class="hint" id="accCount">۰ انتخاب شده</span>
+        </div>
+        <div class="select-all" id="selectAll">انتخاب همه</div>
+        <div class="acc-list" id="accList">
+          <div style="text-align:center;padding:1rem;color:var(--text2);font-size:.8125rem">
+            در حال بارگذاری...
+          </div>
+        </div>
+      </div>
+
+      <!-- Message text -->
+      <div class="card">
+        <div class="card-title">متن پیام</div>
+        <div class="field">
+          <textarea id="msgText" placeholder="متن پیام را بنویسید..." maxlength="4096"></textarea>
+          <div class="hint"><span id="charCount">۰</span> / ۴۰۹۶</div>
+        </div>
+      </div>
+
+      <!-- Type -->
+      <div class="card">
+        <div class="card-title">نوع ارسال</div>
+        <div class="type-group">
+          <div class="type-pill" data-type="pv">
+            <div class="ic">👤</div>
+            <div>خصوصی</div>
+          </div>
+          <div class="type-pill" data-type="groups">
+            <div class="ic">👥</div>
+            <div>گروه‌ها</div>
+          </div>
+          <div class="type-pill sel" data-type="both">
+            <div class="ic">📨</div>
+            <div>هر دو</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optional file -->
+      <div class="card">
+        <div class="card-title">
+          <span>فایل (اختیاری)</span>
+          <span class="hint">عکس · PDF · ZIP</span>
+        </div>
+        <div id="fileZone">
+          <div class="file-drop" id="fileDrop">
+            <div class="ic">📎</div>
+            <div class="main">انتخاب یا رها کردن فایل</div>
+            <div class="sub">حداکثر ۵۰ مگابایت</div>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,.pdf,.zip" style="display:none">
+      </div>
+
+      <!-- Schedule -->
+      <div class="card">
+        <div class="card-title">
+          <span>زمان‌بندی</span>
+          <span class="hint">خالی = فوری</span>
+        </div>
+        <div class="field">
+          <input type="datetime-local" id="scheduleAt">
+          <div class="hint">به‌زودی فعال می‌شود — فعلاً فوری ارسال می‌شود</div>
+        </div>
+      </div>
+
+      <button class="btn primary" id="analyzeBtn" style="margin-bottom:.5rem">
+        <span>آنالیز و دریافت اطلاعات</span>
+      </button>
+    </div>
+
+    <!-- ══ STEP 2: analysis ══ -->
+    <div id="step2" style="display:none">
+      <div class="card">
+        <div class="card-title">در حال آنالیز...</div>
+        <div class="progress"><div class="bar" id="anBar" style="width:0%"></div></div>
+        <div class="progress-text" id="anText">۰٪</div>
+      </div>
+      <div class="card" id="anLog" style="font-size:.8125rem;color:var(--text2);
+        line-height:1.75;max-height:12rem;overflow-y:auto"></div>
+    </div>
+
+    <!-- ══ STEP 3: confirm ══ -->
+    <div id="step3" style="display:none">
+      <div class="card">
+        <div class="card-title">اطلاعات کلی</div>
+        <div id="summaryBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">پیش‌نمایش پیام</div>
+        <div style="padding:.75rem;background:var(--bg);border-radius:.75rem;
+          font-size:.9375rem;line-height:1.7;white-space:pre-wrap;
+          word-break:break-word;direction:rtl;text-align:right"
+          id="previewMsg"></div>
+        <div id="previewFile" style="margin-top:.75rem"></div>
+      </div>
+
+      <button class="btn primary" id="startBtn" style="margin-bottom:.5rem">
+        <span>تایید و شروع ارسال</span>
+      </button>
+      <button class="btn ghost" id="backToSetup">بازگشت و ویرایش</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+"use strict";
+(function(){
+  try{ if(localStorage.getItem("rb_theme")==="dark")
+    document.documentElement.classList.add("theme-dark"); }catch(e){}
+
+  var $ = function(s,r){ return (r||document).querySelector(s); };
+  var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+
+  function h(t,a){var k=Array.prototype.slice.call(arguments,2);var e=document.createElement(t);
+    for(var key in (a||{})){var v=a[key];if(v==null||v===false)continue;
+      if(key==="class")e.className=v;
+      else if(key==="html")e.innerHTML=v;
+      else if(key==="style")e.setAttribute("style",v);
+      else if(key.indexOf("on")===0&&typeof v==="function")e.addEventListener(key.slice(2),v);
+      else e.setAttribute(key,v);}
+    k.forEach(function(x){(Array.isArray(x)?x:[x]).forEach(function(y){
+      if(y==null||y===false)return;e.append(y.nodeType?y:document.createTextNode(String(y)));});});
+    return e;}
+
+  function toFa(s){return String(s==null?"":s).replace(/[0-9]/g,
+    function(d){return "۰۱۲۳۴۵۶۷۸۹"[+d];});}
+  function fmtSize(n){
+    if(n < 1024) return toFa(n) + " B";
+    if(n < 1024*1024) return toFa((n/1024).toFixed(1)) + " KB";
+    return toFa((n/1024/1024).toFixed(2)) + " MB";
+  }
+  function fmtNum(n){ return toFa(Number(n||0).toLocaleString("en-US")); }
+
+  function Token(){ try{ return localStorage.getItem("rb_token"); }catch(e){ return null; } }
+  function authHeaders(){ var t = Token(); return t ? {"Authorization":"Bearer "+t} : {}; }
+
+  function toast(msg, kind){
+    var t = h("div",{class:"toast "+(kind||"")}, h("span",null,String(msg)));
+    $("#toasts").append(t);
+    setTimeout(function(){ t.classList.add("out");
+      setTimeout(function(){ t.remove(); }, 220); }, 3000);
+  }
+
+  var API = {
+    get: async function(p){
+      var r = await fetch(p,{credentials:"same-origin",headers:authHeaders()});
+      if(r.status===401){ location.href="/login"; throw new Error("unauth"); }
+      var j = await r.json().catch(function(){ return {}; });
+      if(!r.ok) throw new Error((j.detail && typeof j.detail==="string")
+        ? j.detail : ("HTTP "+r.status));
+      return j;
+    },
+    post: async function(p,b){
+      var hd = Object.assign({"Content-Type":"application/json"}, authHeaders());
+      var r = await fetch(p,{method:"POST",credentials:"same-origin",headers:hd,
+        body: JSON.stringify(b||{})});
+      if(r.status===401){ location.href="/login"; throw new Error("unauth"); }
+      var j = await r.json().catch(function(){ return {}; });
+      if(!r.ok) throw new Error((j.detail && typeof j.detail==="string")
+        ? j.detail : ("HTTP "+r.status));
+      return j;
+    }
+  };
+
+  // ─── State ───
+  var S = {
+    accounts: [],
+    selected: new Set(),
+    msgText: "",
+    type: "both",
+    file: null,
+    scheduleAt: "",
+    analysis: null,   // {total, perAccount: [{aid, name, pv, groups, items}]}
+    step: 1
+  };
+
+  // ─── Back ───
+  $("#backBtn").onclick = function(){
+    if(S.step === 1) location.href = "/chats";
+    else if(S.step === 2) goStep(1);
+    else if(S.step === 3) goStep(1);
+  };
+
+  // ─── Steps ───
+  function goStep(n){
+    S.step = n;
+    $("#step1").style.display = n===1 ? "" : "none";
+    $("#step2").style.display = n===2 ? "" : "none";
+    $("#step3").style.display = n===3 ? "" : "none";
+    $$(".step-dot").forEach(function(d){
+      var s = parseInt(d.getAttribute("data-step"));
+      d.classList.toggle("active", s===n);
+      d.classList.toggle("done", s<n);
+    });
+    $$(".step-line").forEach(function(l){
+      var s = parseInt(l.getAttribute("data-line"));
+      l.classList.toggle("done", s<n);
+    });
+    $("#scroll").scrollTop = 0;
+  }
+
+  // ─── Accounts ───
+  async function loadAccounts(){
+    try{
+      var r = await API.get("/api/accounts");
+      S.accounts = r.accounts || [];
+      renderAccounts();
+    }catch(e){
+      $("#accList").innerHTML =
+        '<div style="text-align:center;padding:1rem;color:var(--error);font-size:.8125rem">'
+        + (e.message||"خطا") + "</div>";
+    }
+  }
+
+  function renderAccounts(){
+    var box = $("#accList");
+    box.innerHTML = "";
+    if(!S.accounts.length){
+      box.append(h("div",{style:"text-align:center;padding:1rem;color:var(--text2);font-size:.8125rem"},
+        "هنوز اکانتی نداری"));
+      return;
+    }
+    S.accounts.forEach(function(a){
+      var sel = S.selected.has(String(a.id));
+      var row = h("div",{class:"acc-row"+(sel?" sel":"")},
+        h("div",{class:"checkbox"}),
+        h("div",{class:"info"},
+          h("div",{class:"name"}, a.name || a.phone || "اکانت"),
+          h("div",{class:"phone"}, a.phone || a.id)),
+        a.channels_count ? h("span",{class:"ch-count"}, toFa(a.channels_count)+"📢") : null
+      );
+      row.onclick = function(){
+        var id = String(a.id);
+        if(S.selected.has(id)) S.selected.delete(id);
+        else S.selected.add(id);
+        renderAccounts();
+        updateCount();
+      };
+      box.append(row);
+    });
+    updateCount();
+  }
+
+  function updateCount(){
+    $("#accCount").textContent = toFa(S.selected.size) + " انتخاب شده";
+    var allSel = S.accounts.length > 0 && S.selected.size === S.accounts.length;
+    $("#selectAll").textContent = allSel ? "لغو انتخاب همه" : "انتخاب همه";
+  }
+
+  $("#selectAll").onclick = function(){
+    var allSel = S.accounts.length > 0 && S.selected.size === S.accounts.length;
+    if(allSel) S.selected.clear();
+    else S.accounts.forEach(function(a){ S.selected.add(String(a.id)); });
+    renderAccounts();
+  };
+
+  // ─── Type ───
+  $$(".type-pill").forEach(function(p){
+    p.onclick = function(){
+      $$(".type-pill").forEach(function(x){ x.classList.remove("sel"); });
+      p.classList.add("sel");
+      S.type = p.getAttribute("data-type");
+    };
+  });
+
+  // ─── Message ───
+  $("#msgText").addEventListener("input", function(){
+    S.msgText = this.value;
+    $("#charCount").textContent = toFa(S.msgText.length);
+  });
+
+  // ─── File ───
+  var drop = $("#fileDrop");
+  drop.onclick = function(){ $("#fileInput").click(); };
+  ["dragover","dragenter"].forEach(function(ev){
+    drop.addEventListener(ev, function(e){
+      e.preventDefault(); drop.classList.add("drag");
+    });
+  });
+  ["dragleave","drop"].forEach(function(ev){
+    drop.addEventListener(ev, function(e){
+      e.preventDefault(); drop.classList.remove("drag");
+    });
+  });
+  drop.addEventListener("drop", function(e){
+    if(e.dataTransfer.files.length) pickFile(e.dataTransfer.files[0]);
+  });
+  $("#fileInput").onchange = function(e){
+    if(e.target.files[0]) pickFile(e.target.files[0]);
+  };
+
+  function pickFile(f){
+    var ok = f.type.startsWith("image/")
+      || f.type === "application/pdf"
+      || f.type === "application/zip"
+      || /\.(jpe?g|png|gif|webp|pdf|zip)$/i.test(f.name);
+    if(!ok){ toast("فقط عکس، PDF یا ZIP", "err"); return; }
+    if(f.size > 50*1024*1024){ toast("حجم بیش از ۵۰ مگابایت", "err"); return; }
+    S.file = f;
+    renderFile();
+  }
+
+  function renderFile(){
+    var zone = $("#fileZone");
+    zone.innerHTML = "";
+    if(!S.file){
+      var d = h("div",{class:"file-drop",id:"fileDrop"},
+        h("div",{class:"ic"},"📎"),
+        h("div",{class:"main"},"انتخاب یا رها کردن فایل"),
+        h("div",{class:"sub"},"حداکثر ۵۰ مگابایت"));
+      d.onclick = function(){ $("#fileInput").click(); };
+      zone.append(d);
+      return;
+    }
+    var row = h("div",{class:"file-picked"},
+      h("div",{class:"ic"},"📄"),
+      h("div",{class:"body"},
+        h("div",{class:"fname"}, S.file.name),
+        h("div",{class:"fsize"}, fmtSize(S.file.size))),
+      h("button",{class:"rm",title:"حذف"},"×"));
+    row.querySelector(".rm").onclick = function(e){
+      e.stopPropagation();
+      S.file = null;
+      $("#fileInput").value = "";
+      renderFile();
+    };
+    zone.append(row);
+  }
+
+  // ─── Analyze ───
+  $("#analyzeBtn").onclick = async function(){
+    if(S.selected.size === 0){ toast("حداقل یک اکانت انتخاب کن", "err"); return; }
+    if(!S.msgText.trim()){ toast("متن پیام الزامی است", "err"); return; }
+
+    goStep(2);
+    $("#anBar").style.width = "0%";
+    $("#anText").textContent = "۰٪";
+    $("#anLog").innerHTML = "";
+
+    var accs = S.accounts.filter(function(a){ return S.selected.has(String(a.id)); });
+    var logBox = $("#anLog");
+    var result = { total: 0, perAccount: [] };
+    var perAccProgress = 0;
+
+    function addLog(txt, color){
+      var line = h("div",{style:color ? "color:"+color : ""}, txt);
+      logBox.append(line);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    for(var i=0; i<accs.length; i++){
+      var a = accs[i];
+      var aid = String(a.id);
+      var name = a.name || a.phone || aid;
+      addLog("▸ " + name + " — شروع...", "var(--primary)");
+
+      var item = { aid: aid, name: name, pv: 0, groups: 0, items: [] };
+      var kinds = S.type === "pv" ? ["pv"] : S.type === "groups" ? ["groups"] : ["pv","groups"];
+
+      for(var k=0; k<kinds.length; k++){
+        var kind = kinds[k];
+        try{
+          var r = await API.get("/api/accounts/"+encodeURIComponent(aid)+"/collect/"+kind);
+          var items = r.items || [];
+          items.forEach(function(it){
+            item.items.push({
+              type: it.type || (kind === "pv" ? "pv" : "group"),
+              target: it.target,
+              name: it.name || it.target,
+            });
+          });
+          if(kind === "pv") item.pv = items.length;
+          else item.groups = items.length;
+          addLog("  ✓ " + (kind==="pv" ? "خصوصی" : "گروه‌ها") + ": " + toFa(items.length), "var(--success)");
+        }catch(e){
+          addLog("  ✗ " + (kind==="pv" ? "خصوصی" : "گروه‌ها") + ": " + (e.message||"خطا"), "var(--error)");
+        }
+        perAccProgress++;
+        var pct = Math.round(perAccProgress / (accs.length * kinds.length) * 100);
+        $("#anBar").style.width = pct + "%";
+        $("#anText").textContent = toFa(pct) + "٪";
+      }
+      result.total += item.items.length;
+      result.perAccount.push(item);
+      addLog("  ↳ جمع: " + toFa(item.items.length), "var(--text)");
+    }
+
+    S.analysis = result;
+    addLog("");
+    addLog("✅ آنالیز تمام شد", "var(--success)");
+    $("#anBar").style.width = "100%";
+    $("#anText").textContent = "۱۰۰٪";
+
+    // Auto go to step 3 after short delay
+    setTimeout(function(){ goStep(3); renderSummary(); }, 600);
+  };
+
+  // ─── Summary ───
+  function renderSummary(){
+    var box = $("#summaryBox");
+    box.innerHTML = "";
+    if(!S.analysis){ return; }
+
+    var totalPV = 0, totalGr = 0;
+    S.analysis.perAccount.forEach(function(a){
+      totalPV += a.pv; totalGr += a.groups;
+    });
+
+    function row(lbl, val, color){
+      var r = h("div",{class:"result-row"},
+        h("div",{class:"lbl"}, lbl),
+        h("div",{class:"val",style: color?"color:"+color:""}, val));
+      box.append(r);
+    }
+
+    row("اکانت‌های شامل", toFa(S.analysis.perAccount.length)+" از "+toFa(S.accounts.length));
+    row("کل مخاطبین", fmtNum(S.analysis.total));
+    if(S.type !== "groups") row("پیام‌های خصوصی", fmtNum(totalPV), "var(--primary)");
+    if(S.type !== "pv")     row("پیام‌های گروهی", fmtNum(totalGr), "#8b5cf6");
+
+    // per account detail
+    var det = h("div",{style:"margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)"});
+    det.append(h("div",{style:"font-size:.75rem;color:var(--text2);margin-bottom:.5rem"},"جزئیات اکانت‌ها"));
+    S.analysis.perAccount.forEach(function(a){
+      var line = h("div",{style:"display:flex;justify-content:space-between;padding:.375rem 0;font-size:.8125rem"},
+        h("span",{style:"color:var(--text)"}, a.name),
+        h("span",{style:"color:var(--text2);direction:ltr;font-family:ui-monospace,monospace"},
+          toFa(a.pv) + " + " + toFa(a.groups) + " = " + toFa(a.pv + a.groups)));
+      det.append(line);
+    });
+    box.append(det);
+
+    // preview
+    $("#previewMsg").textContent = S.msgText;
+
+    var pf = $("#previewFile");
+    pf.innerHTML = "";
+    if(S.file){
+      pf.append(h("div",{class:"file-picked"},
+        h("div",{class:"ic"},"📄"),
+        h("div",{class:"body"},
+          h("div",{class:"fname"}, S.file.name),
+          h("div",{class:"fsize"}, fmtSize(S.file.size)))));
+    }
+  }
+
+  // ─── Start ───
+  $("#startBtn").onclick = async function(){
+    if(!S.analysis || S.analysis.total === 0){
+      toast("چیزی برای ارسال نیست", "err"); return;
+    }
+    if(S.file){
+      toast("ارسال فایل به‌زودی فعال می‌شود — فعلاً فقط متن ارسال می‌شود", "err");
+      // ادامه می‌دهیم ولی فایل ارسال نمی‌شود
+    }
+    if(!confirm("ارسال " + toFa(S.analysis.total) + " پیام شروع شود؟")) return;
+
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner"></span><span>در حال انتقال به صف...</span>';
+
+    var totalAdded = 0;
+    var errors = [];
+    var batchId = "b_" + Date.now() + "_" +
+      Math.random().toString(36).slice(2,8);
+    var fileLabel = S.file ? S.file.name : "";
+
+    for(var i=0; i<S.analysis.perAccount.length; i++){
+      var a = S.analysis.perAccount[i];
+      if(!a.items.length) continue;
+      try{
+        var payload = {
+          owner_account: a.aid,
+          batch_id: batchId,
+          message: S.msgText.slice(0, 500),
+          type: S.type,
+          file_name: fileLabel,
+          items: a.items.map(function(it){
+            return {
+              type: it.type,
+              target: it.target,
+              name: it.name,
+              message: S.msgText
+            };
+          })
+        };
+        var r = await API.post("/api/enqueue", payload);
+        totalAdded += (r.added || 0);
+      }catch(e){
+        errors.push(a.name + ": " + (e.message||"خطا"));
+      }
+    }
+
+    if(totalAdded === 0){
+      toast("هیچ پیامی اضافه نشد", "err");
+      errors.forEach(function(x){ toast(x, "err"); });
+      this.disabled = false;
+      this.innerHTML = "<span>تایید و شروع ارسال</span>";
+      return;
+    }
+
+    toast("✅ " + toFa(totalAdded) + " پیام به صف اضافه شد", "ok");
+
+    // redirect to reports page
+    setTimeout(function(){ location.href = "/reports"; }, 800);
+  };
+
+  $("#backToSetup").onclick = function(){ goStep(1); };
+
+  // ─── Init ───
+  loadAccounts();
+  goStep(1);
+})();
+</script>
+</body>
+</html>

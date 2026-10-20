@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>گفتگوها</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f1f1f3;--bg3:#e7e7ea;--text:#0f0f10;--text2:#707579;--icon2:#707579;
+--meta:#8b8f95;--border:#e6e8ec;--divider:#d5d9df;--primary:#3390ec;
+--primary-tint:rgba(51,144,236,.1);--placeholder:#a2acb4;--success:#00c73e;--error:#e53935;
+--font:"Vazirmatn",-apple-system,system-ui,sans-serif;--font-round:"Nunito","Vazirmatn",sans-serif;
+--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+html.theme-dark{--bg:#18191c;--bg2:#232529;--bg3:#2b2e33;--text:#f3f4f6;--text2:#a9adb4;
+--icon2:#a9adb4;--meta:#82868d;--border:#2b2e33;--divider:#3a3e45;
+--primary:#a08eff;--primary-tint:rgba(160,142,255,.14);color-scheme:dark}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);font-size:16px;line-height:1.5;color:var(--text);background:var(--bg);
+-webkit-font-smoothing:antialiased;user-select:none;direction:rtl}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;outline:none;padding:0}
+input{font:inherit;color:inherit;outline:none;border:0;background:none}
+.icon{display:inline-flex;width:1.5rem;height:1.5rem;flex-shrink:0}
+.icon svg{width:100%;height:100%;display:block}
+.app{display:flex;flex-direction:column;height:100dvh;background:var(--bg);overflow:hidden}
+
+.TopBar{display:flex;align-items:center;gap:.5rem;padding:.5rem;
+padding-top:calc(.5rem + var(--safe-top));
+background:var(--bg);flex-shrink:0;min-height:3.25rem}
+.TopBar .logo{display:flex;align-items:center;gap:.5rem;flex:1;min-width:0}
+.TopBar .logo .dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--icon2);
+flex-shrink:0;transition:background .2s}
+.TopBar .logo .dot.on{background:var(--success)}
+.TopBar .logo .dot.connecting{background:#fb8c00;animation:pulse 1s infinite}
+.TopBar .logo .dot.offline{background:var(--error)}
+@keyframes pulse{50%{opacity:.35}}
+.TopBar .logo .brand{font-size:1.0625rem;font-weight:700;color:var(--text)}
+.TopBar .icon-btn{width:2.5rem;height:2.5rem;border-radius:50%;display:flex;
+align-items:center;justify-content:center;color:var(--icon2);flex-shrink:0;
+transition:background .15s,color .15s}
+.TopBar .icon-btn:hover{background:var(--primary-tint);color:var(--primary)}
+
+.TabsContainer{margin:.25rem .5rem .5rem;padding:.25rem;background:var(--bg2);
+border-radius:1.375rem;display:flex;gap:.125rem;flex-shrink:0}
+.Tab{flex:1;padding:.5rem;border-radius:1.125rem;font-size:.875rem;font-weight:500;
+color:var(--text2);text-align:center;white-space:nowrap;
+transition:background .2s,color .2s;border:0;cursor:pointer}
+.Tab:hover:not(.active){color:var(--text)}
+.Tab.active{background:var(--primary);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+.chat-list{flex:1;min-height:0;overflow-y:auto;background:var(--bg);
+padding:.5rem .5rem 2rem;scrollbar-width:thin;scrollbar-color:transparent transparent;
+transition:scrollbar-color .3s;-webkit-overflow-scrolling:touch}
+.chat-list:hover{scrollbar-color:rgba(150,150,150,.4) transparent}
+.chat-list::-webkit-scrollbar{width:.375rem}
+.chat-list::-webkit-scrollbar-thumb{background:transparent;border-radius:.375rem}
+.chat-list:hover::-webkit-scrollbar-thumb{background:rgba(150,150,150,.4)}
+
+.Chat{display:flex;align-items:center;gap:.75rem;padding:.5rem .625rem;
+height:4.25rem;border-radius:.75rem;cursor:pointer;color:inherit;
+transition:background .15s;text-decoration:none}
+.Chat:hover{background:var(--bg2)}
+.Chat:active{background:var(--bg3)}
+@media(max-width:600px){.Chat{border-radius:.5rem}}
+.Chat .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:.125rem}
+.Chat .top,.Chat .bottom{display:flex;align-items:center;gap:.4375rem;min-width:0}
+.Chat .title{flex:1;min-width:0;font-size:.9375rem;font-weight:600;line-height:1.35;
+color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+display:flex;align-items:center;gap:.25rem}
+.Chat .bot-icon{display:inline-flex;width:1rem;height:1rem;color:var(--primary);flex-shrink:0}
+.Chat .meta{display:flex;align-items:center;gap:.125rem;flex-shrink:0;
+font-size:.75rem;color:var(--meta);font-variant-numeric:tabular-nums;padding-inline-start:.25rem}
+.Chat .meta .tick{display:inline-flex;width:1.125rem;height:1.125rem;color:var(--primary)}
+.Chat .last{flex:1;min-width:0;font-size:.875rem;color:var(--text2);
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.Chat .last .you{color:var(--text2);font-weight:500}
+.Chat .badge{flex-shrink:0;min-width:1.375rem;height:1.375rem;padding:0 .375rem;
+border-radius:.75rem;background:var(--primary);color:#fff;font-size:.8125rem;
+font-weight:600;line-height:1.375rem;text-align:center}
+
+.Avatar{--_s:3.25rem;--_f:1.125rem;width:var(--_s);height:var(--_s);border-radius:50%;
+flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;
+font-family:var(--font-round);font-weight:700;font-size:var(--_f);white-space:nowrap;
+user-select:none;overflow:hidden;background-size:cover;background-position:center}
+.Avatar img{width:100%;height:100%;object-fit:cover;display:block;background:var(--bg2)}
+.Avatar .letters{line-height:1}
+
+/* Skeleton */
+.skel-row{display:flex;gap:.75rem;padding:.5rem .625rem;height:4.25rem;align-items:center}
+.skel-a{width:3.25rem;height:3.25rem;border-radius:50%;flex-shrink:0;
+background:linear-gradient(90deg,var(--bg2) 0%,
+  color-mix(in srgb,var(--bg2) 65%,var(--text2) 8%) 50%,var(--bg2) 100%);
+background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite}
+.skel-l{flex:1;display:flex;flex-direction:column;gap:.5rem}
+.skel-l .b{height:.75rem;border-radius:.375rem;
+background:linear-gradient(90deg,var(--bg2) 0%,
+  color-mix(in srgb,var(--bg2) 65%,var(--text2) 8%) 50%,var(--bg2) 100%);
+background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite}
+.skel-l .b:first-child{width:55%;height:.9375rem}
+.skel-l .b:last-child{width:85%;opacity:.7}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;
+padding:4rem 1.5rem;color:var(--text2)}
+.empty .ic{width:5rem;height:5rem;border-radius:50%;background:var(--bg2);
+display:flex;align-items:center;justify-content:center;margin-bottom:1rem;
+color:var(--placeholder)}
+.empty .ic .icon{width:2.25rem;height:2.25rem}
+.empty h3{font-size:1.0625rem;font-weight:500;color:var(--text);margin-bottom:.375rem}
+.empty p{font-size:.9375rem;line-height:1.6;max-width:18rem}
+
+/* Sheet */
+.sheet-backdrop{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);
+opacity:0;visibility:hidden;transition:opacity .22s,visibility 0s linear .22s}
+.sheet-backdrop.open{opacity:1;visibility:visible;
+transition:opacity .22s,visibility 0s linear 0s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:9001;background:var(--bg);
+border-radius:1.5rem 1.5rem 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.15);
+transform:translateY(100%);transition:transform .25s cubic-bezier(.2,.8,.2,1);
+max-height:85vh;overflow-y:auto;padding:.5rem 0 max(1rem,var(--safe-bottom));
+max-width:520px;margin:0 auto}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:2.25rem;height:.25rem;border-radius:999px;
+background:var(--divider);margin:.375rem auto .75rem}
+.sheet-title{padding:0 1.25rem .875rem;font-size:1rem;font-weight:500;text-align:center;
+border-bottom:1px solid var(--border);margin-bottom:.25rem}
+.sheet-item{display:flex;align-items:center;gap:.875rem;padding:.875rem 1.25rem;
+width:100%;text-align:start;font-size:.9375rem;color:var(--text);
+transition:background .15s}
+.sheet-item:hover{background:var(--bg2)}
+.sheet-item + .sheet-item{border-top:1px solid var(--border)}
+.sheet-item .icon{width:1.375rem;height:1.375rem;color:var(--icon2);flex-shrink:0}
+.sheet-item .icon svg{width:100%;height:100%}
+.sheet-item .label{flex:1;min-width:0}
+.sheet-item .label > div:first-child{font-weight:500;white-space:nowrap;
+overflow:hidden;text-overflow:ellipsis}
+.sheet-item .hint{font-size:.75rem;color:var(--text2);margin-top:.125rem}
+.sheet-item.active{background:var(--primary-tint)}
+.sheet-item.active .icon{color:var(--primary)}
+.sheet-item.danger{color:var(--error)}
+.sheet-item.danger .icon{color:var(--error)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.25);
+display:flex;align-items:center;justify-content:center;padding:1rem;
+opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s linear .2s}
+.modal-backdrop.open{opacity:1;visibility:visible;
+transition:opacity .2s,visibility 0s linear 0s}
+.modal-card{width:100%;max-width:22rem;background:var(--bg);border-radius:1.5rem;
+box-shadow:0 .25rem 1rem rgba(0,0,0,.25);transform:scale(.92);
+transition:transform .2s;overflow:hidden}
+.modal-backdrop.open .modal-card{transform:scale(1)}
+.modal-head{padding:1.25rem 1.5rem .5rem;font-size:1.25rem;font-weight:500}
+.modal-body{padding:.25rem 1.5rem 1rem;font-size:1rem;line-height:1.5;
+overflow-y:auto;color:var(--text2)}
+.modal-actions{display:flex;justify-content:flex-end;gap:.25rem;padding:.25rem 1rem 1rem}
+.Button{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+height:2.5rem;padding:0 1.25rem;border-radius:1.75rem;
+font-size:.9375rem;font-weight:500}
+.Button.primary{background:var(--primary);color:#fff}
+.Button.text{color:var(--primary)}
+.Button.text:hover{background:var(--primary-tint)}
+.Button.danger{color:var(--error)}
+
+/* Toast */
+.toast-wrap{position:fixed;top:calc(.75rem + var(--safe-top));left:0;right:0;
+z-index:10000;display:flex;flex-direction:column;align-items:center;gap:.5rem;
+pointer-events:none;padding:0 .75rem}
+.toast{display:flex;align-items:center;gap:.625rem;max-width:22rem;
+padding:.875rem 1rem;border-radius:1rem;background:#1c1c1eff;color:#fff;
+-webkit-backdrop-filter:blur(.5rem);backdrop-filter:blur(.5rem);
+font-size:.9375rem;line-height:1.3;animation:toastIn .25s}
+.toast.out{opacity:0;transform:translateY(-.5rem);transition:opacity .2s,transform .2s}
+@keyframes toastIn{from{opacity:0;transform:translateY(-.75rem)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="TopBar" id="topbar"></div>
+  <div class="TabsContainer" id="tabs">
+    <button class="Tab active" data-t="all">همه</button>
+    <button class="Tab" data-t="pv">خصوصی</button>
+    <button class="Tab" data-t="groups">گروه‌ها</button>
+    <button class="Tab" data-t="channels">کانال‌ها</button>
+  </div>
+  <div class="chat-list" id="chatScroll">
+    <div id="chatList"></div>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="sheet"></div>
+<div class="modal-backdrop" id="modalBackdrop"></div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+"use strict";
+(function(){
+  try{ if(localStorage.getItem("rb_theme")==="dark") document.documentElement.classList.add("theme-dark"); }catch(e){}
+
+  var $ = function(s,r){ return (r||document).querySelector(s); };
+  function h(t,a){
+    var k = Array.prototype.slice.call(arguments,2);
+    var e = document.createElement(t);
+    for(var key in (a||{})){
+      var v = a[key];
+      if(v==null||v===false) continue;
+      if(key==="class") e.className = v;
+      else if(key==="html") e.innerHTML = v;
+      else if(key==="style") e.setAttribute("style",v);
+      else if(key.indexOf("on")===0 && typeof v==="function") e.addEventListener(key.slice(2),v);
+      else e.setAttribute(key,v);
+    }
+    k.forEach(function(x){
+      (Array.isArray(x)?x:[x]).forEach(function(y){
+        if(y==null||y===false) return;
+        e.append(y.nodeType?y:document.createTextNode(String(y)));
+      });
+    });
+    return e;
+  }
+  function svgp(p){
+    return '<span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      +'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg></span>';
+  }
+  var ICON = {
+    chat: svgp('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+    search: svgp('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'),
+    more: svgp('<circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>'),
+    user: svgp('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    check: svgp('<polyline points="20 6 9 17 4 12"/>'),
+    check2: svgp('<polyline points="2 12.5 7 17.5 15 8"/><polyline points="10 15 12 17.5 21 7"/>'),
+    bot: svgp('<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/>'),
+    broom: svgp('<path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M6 10l1 10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-10"/>'),
+    trash: svgp('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>'),
+    logout: svgp('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'),
+    alert: svgp('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'),
+    cog: svgp('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>')
+  };
+
+  var PEER = [["#FF845E","#D45246"],["#FEBB5B","#F68136"],["#B694F9","#6C61DF"],
+    ["#9AD164","#46BA43"],["#53EDD6","#28C9B7"],["#5CAFFA","#408ACF"],["#FF8AAC","#D95574"]];
+  function avatarBg(s){
+    var x = 0;
+    for(var i=0;i<(s||"").length;i++) x = (x*31 + s.charCodeAt(i))|0;
+    var p = PEER[Math.abs(x)%PEER.length];
+    return "linear-gradient(180deg,"+p[0]+" 0%,"+p[1]+" 100%)";
+  }
+  function initials(name){
+    if(!name) return "?";
+    var p = String(name).trim().split(/[\s\u200c]+/).filter(Boolean);
+    if(!p.length) return "?";
+    if(p.length>=2) return (Array.from(p[0])[0]||"")+(Array.from(p[1])[0]||"");
+    return Array.from(p[0]).slice(0,2).join("");
+  }
+  function toFa(s){
+    return String(s==null?"":s).replace(/[0-9]/g, function(d){ return "۰۱۲۳۴۵۶۷۸۹"[+d]; });
+  }
+  function Token(){ try{ return localStorage.getItem("rb_token"); }catch(e){ return null; } }
+  function authHeaders(){
+    var t = Token();
+    return t ? {"Authorization":"Bearer "+t} : {};
+  }
+
+  function toast(msg){
+    var t = h("div",{class:"toast"},h("span",null,String(msg)));
+    $("#toastWrap").append(t);
+    setTimeout(function(){
+      t.classList.add("out");
+      setTimeout(function(){ t.remove(); }, 220);
+    }, 2400);
+  }
+
+  var API = {
+    get: async function(p){
+      var r = await fetch(p,{credentials:"same-origin",headers:authHeaders()});
+      if(r.status===401){ location.href="/login"; throw new Error("unauth"); }
+      var j = await r.json().catch(function(){ return {}; });
+      if(!r.ok) throw new Error(
+        (j.detail && typeof j.detail==="string") ? j.detail : ("HTTP "+r.status));
+      return j;
+    },
+    post: async function(p,b){
+      var hd = Object.assign({"Content-Type":"application/json"}, authHeaders());
+      var r = await fetch(p,{method:"POST",credentials:"same-origin",headers:hd,
+        body:JSON.stringify(b||{})});
+      if(r.status===401){ location.href="/login"; throw new Error("unauth"); }
+      var j = await r.json().catch(function(){ return {}; });
+      if(!r.ok) throw new Error(
+        (j.detail && typeof j.detail==="string") ? j.detail : ("HTTP "+r.status));
+      return j;
+    }
+  };
+
+  var CS = {
+    aid: null,
+    accounts: [],
+    all: { pv: [], groups: [], channels: [], bots: [] },
+    view: [],
+    tab: "all",
+    itemEls: new Map(),
+    shown: 0,
+    io: null,
+    wsListSubs: []
+  };
+  var PS_CHATS = 30;
+
+  function updateConnDot(state){
+    var d = $("#connDot");
+    if(!d) return;
+    d.className = "dot " + (state||"");
+  }
+
+  function mountHeader(){
+    var bar = $("#topbar");
+    bar.innerHTML = "";
+    var logo = h("div",{class:"logo"},
+      h("span",{class:"dot",id:"connDot"}),
+      h("span",{class:"brand"},"گفتگوها"));
+    var moreBtn = h("button",{class:"icon-btn",title:"اکانت‌ها",html:ICON.more});
+    moreBtn.onclick = showMoreMenu;
+    var searchBtn = h("button",{class:"icon-btn",title:"جستجو",html:ICON.search});
+    searchBtn.onclick = function(){
+      var q = prompt("جستجو:");
+      if(q && q.trim() && CS.aid){
+        toast("جستجو به‌زودی");
+      }
+    };
+    bar.append(logo,h("div",{style:"flex:1"}),moreBtn,searchBtn);
+  }
+
+  function makeAvatar(c){
+    var av = h("div",{class:"Avatar"});
+    var guid = c.guid;
+    if(guid && CS.aid){
+      var img = h("img",{
+        src: "/api/accounts/"+encodeURIComponent(CS.aid)+"/avatar/"+encodeURIComponent(guid),
+        alt:"", loading:"lazy"
+      });
+      img.onerror = function(){
+        var p = this.parentNode;
+        p.innerHTML = "";
+        p.style.background = avatarBg(guid);
+        p.append(h("span",{class:"letters"},initials(extractName(c))));
+      };
+      av.append(img);
+    } else {
+      av.style.background = avatarBg(c.title||"");
+      av.append(h("span",{class:"letters"},initials(extractName(c))));
+    }
+    return av;
+  }
+
+  function typeLabel(t){
+    if(t==="User") return "کاربر";
+    if(t==="Group") return "گروه";
+    if(t==="Channel") return "کانال";
+    if(t==="Bot") return "ربات";
+    if(t==="Service") return "سرویس";
+    return "گفتگو";
+  }
+  function extractName(c){
+    if(!c) return "?";
+    var cands = [c.title,c.first_name,c.firstName,c.name,c.display_name,c.displayName];
+    for(var i=0;i<cands.length;i++){
+      var v = cands[i];
+      if(v && String(v).trim()) return String(v).trim();
+    }
+    if(c.username) return "@"+String(c.username).replace(/^@/,"");
+    return "?";
+  }
+  function isBot(c){
+    if(!c) return false;
+    if(c.is_bot) return true;
+    if(c.type==="Bot") return true;
+    var u = (c.username||"").toLowerCase();
+    if(u.slice(-3)==="bot" || u.slice(-4)==="_bot") return true;
+    return false;
+  }
+
+  var MEDIA_LABEL = {
+    Image:"🖼",Photo:"🖼",File:"📎",Document:"📎",Voice:"🎤",Music:"🎵",
+    Video:"🎬",Gif:"GIF",Sticker:"استیکر",Contact:"👤",Location:"📍",Poll:"📊"
+  };
+
+  function previewText(c){
+    if(c.last_text) return c.last_text;
+    if(c.last_type && c.last_type!=="Text")
+      return MEDIA_LABEL[c.last_type] || ("["+c.last_type+"]");
+    return "";
+  }
+
+  function fmtTime(ts){
+    var n = parseInt(ts)||0;
+    if(!n) return "";
+    if(n > 1e12) n = Math.floor(n/1000);
+    try{
+      var d = new Date(n*1000), now = new Date();
+      if(d.toDateString()===now.toDateString()){
+        return d.toLocaleTimeString("fa-IR",{hour:"2-digit",minute:"2-digit"});
+      }
+      var days = Math.floor((now-d)/86400000);
+      if(days < 7){
+        return d.toLocaleDateString("fa-IR",{weekday:"long"});
+      }
+      return d.toLocaleDateString("fa-IR",{month:"2-digit",day:"2-digit"});
+    }catch(e){ return ""; }
+  }
+
+  async function initAccounts(){
+    try{
+      var r = await API.get("/api/accounts");
+      CS.accounts = r.accounts || [];
+      if(!CS.accounts.length){
+        $("#chatList").innerHTML =
+          '<div class="empty"><div class="ic">'+ICON.user+'</div>'+
+          '<h3>اکانتی نیست</h3><p>اولین اکانتت رو اضافه کن.</p>'+
+          '<a class="Button primary" style="margin-top:1rem;text-decoration:none" href="/accounts">افزودن اکانت</a></div>';
+        return false;
+      }
+      CS.aid = String(CS.accounts[0].id);
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function normChat(c){
+    return {
+      guid: c.guid,
+      type: c.type,
+      title: c.title || c.first_name || c.firstName || c.name || "",
+      username: c.username || "",
+      is_bot: !!c.is_bot,
+      last_text: c.last_text || "",
+      last_time: c.last_time || 0,
+      last_is_mine: !!c.last_is_mine,
+      last_type: c.last_type || "",
+      unread: 0
+    };
+  }
+
+  function showSkeleton(){
+    var el = $("#chatList");
+    el.innerHTML = "";
+    for(var i=0;i<8;i++){
+      el.append(h("div",{class:"skel-row"},
+        h("div",{class:"skel-a"}),
+        h("div",{class:"skel-l"},
+          h("div",{class:"b"}),
+          h("div",{class:"b"}))));
+    }
+  }
+
+  async function loadChats(force){
+    var el = $("#chatList");
+    if(!el) return;
+    if(!CS.aid){
+      el.innerHTML = '<div class="empty"><p>اکانتی انتخاب نشده</p></div>';
+      return;
+    }
+    var aid = CS.aid;
+    if(!force) showSkeleton();
+    try{
+      var r = await API.get("/api/accounts/"+aid+"/chat-list?force="+(force?"true":"false"));
+      if(aid !== CS.aid) return;
+      var pvArr = ((r.pv||[]).concat(r.bots||[])).map(normChat);
+      var grArr = (r.groups||[]).map(normChat);
+      var chArr = (r.channels||[]).map(normChat);
+      pvArr.forEach(function(c){ if(!c.is_bot && isBot(c)) c.is_bot = true; });
+      CS.all = { pv: pvArr, groups: grArr, channels: chArr, bots: [] };
+      CS.itemEls.clear();
+      applyFilter();
+    }catch(e){
+      el.innerHTML = "";
+      el.append(h("div",{class:"empty"},
+        h("div",{class:"ic",html:ICON.alert}),
+        h("h3",null,"خطا"),
+        h("p",null,e.message||"بارگذاری نشد")));
+    }
+  }
+
+  function getView(){
+    var all;
+    if(CS.tab==="all") all = [].concat(CS.all.pv||[], CS.all.groups||[], CS.all.channels||[]);
+    else if(CS.tab==="pv") all = (CS.all.pv||[]).slice();
+    else if(CS.tab==="groups") all = (CS.all.groups||[]).slice();
+    else if(CS.tab==="channels") all = (CS.all.channels||[]).slice();
+    else all = [];
+    var seen = new Set();
+    all = all.filter(function(c){
+      if(!c || !c.guid) return false;
+      if(seen.has(c.guid)) return false;
+      seen.add(c.guid);
+      return true;
+    });
+    all.sort(function(a,b){ return (b.last_time||0)-(a.last_time||0); });
+    return all;
+  }
+
+  function applyFilter(){
+    var el = $("#chatList");
+    if(!el) return;
+    if(CS.io){ CS.io.disconnect(); CS.io = null; }
+    CS.view = getView();
+    CS.shown = 0;
+    el.innerHTML = "";
+    CS.itemEls.clear();
+    if(!CS.view.length){
+      el.append(h("div",{class:"empty"},
+        h("div",{class:"ic",html:ICON.chat}),
+        h("h3",null,"گفتگویی نیست")));
+      return;
+    }
+    renderMore();
+  }
+
+  function renderMore(){
+    var el = $("#chatList");
+    if(!el) return;
+    $$(".list-sentinel", el).forEach(function(x){ x.remove(); });
+    var end = Math.min(CS.view.length, CS.shown + PS_CHATS);
+    for(var i=CS.shown; i<end; i++){
+      el.append(buildRow(CS.view[i]));
+    }
+    CS.shown = end;
+    if(CS.shown < CS.view.length){
+      var s = h("div",{class:"list-sentinel",style:"height:1px"});
+      el.append(s);
+      if(CS.io) CS.io.disconnect();
+      CS.io = new IntersectionObserver(function(es){
+        if(es.some(function(x){ return x.isIntersecting; })) renderMore();
+      },{root:$("#chatScroll"),rootMargin:"300px"});
+      CS.io.observe(s);
+    }
+  }
+
+  function fillRow(row, c){
+    var info = row.querySelector(".info");
+    info.innerHTML = "";
+    var meta = h("span",{class:"meta"});
+    if(c.last_is_mine && c.last_time){
+      meta.append(h("span",{class:"tick",html:ICON.check2}));
+    }
+    if(c.last_time){
+      meta.append(h("span",{class:"time"},fmtTime(c.last_time)));
+    }
+    var title = h("div",{class:"title"});
+    if(isBot(c)){
+      title.append(h("span",{class:"bot-icon",html:ICON.bot}));
+    }
+    title.append(document.createTextNode(extractName(c)));
+    var last = h("div",{class:"last"});
+    if(c.last_is_mine) last.append(h("span",{class:"you"},"شما: "));
+    last.append(document.createTextNode(previewText(c)));
+    info.append(
+      h("div",{class:"top"}, title, meta),
+      h("div",{class:"bottom"}, last,
+        c.unread>0 ? h("span",{class:"badge"}, c.unread>99?"99+":toFa(c.unread)) : null));
+  }
+
+  function buildRow(c){
+    var href = "/chat/"+encodeURIComponent(CS.aid)+"/"+encodeURIComponent(c.guid);
+    var row = h("a",{class:"Chat","data-guid":c.guid,href:href},
+      makeAvatar(c),
+      h("div",{class:"info"}));
+    fillRow(row, c);
+    CS.itemEls.set(c.guid, row);
+    attachLongPress(row, c);
+    return row;
+  }
+
+  function attachLongPress(el, c){
+    var t = null, sx = 0, sy = 0;
+    function cancel(){ clearTimeout(t); t = null; }
+    el.addEventListener("pointerdown", function(e){
+      if(e.button>0) return;
+      sx = e.clientX; sy = e.clientY;
+      cancel();
+      t = setTimeout(function(){
+        t = null;
+        el._long = true;
+        if(navigator.vibrate) try{ navigator.vibrate(15); }catch(_){}
+        chatActions(c);
+      }, 480);
+    });
+    el.addEventListener("pointermove", function(e){
+      if(t && (Math.abs(e.clientX-sx)>8 || Math.abs(e.clientY-sy)>8)) cancel();
+    });
+    ["pointerup","pointercancel","pointerleave"].forEach(function(ev){
+      el.addEventListener(ev, cancel);
+    });
+  }
+
+  function $$(s,r){
+    return Array.prototype.slice.call((r||document).querySelectorAll(s));
+  }
+
+  // ─── Sheet ───
+  var sheetEl=null, sheetBd=null;
+  function closeSheet(){
+    if(!sheetEl) return;
+    var s = sheetEl, b = sheetBd;
+    sheetEl = null; sheetBd = null;
+    s.classList.remove("open");
+    b.classList.remove("open");
+    setTimeout(function(){ s.remove(); b.remove(); }, 260);
+  }
+  function openSheet(content){
+    closeSheet();
+    var bd = h("div",{class:"sheet-backdrop"});
+    var sh = h("div",{class:"sheet"});
+    sh.append(h("div",{class:"sheet-handle"}));
+    if(typeof content==="string") sh.append(h("div",{html:content}));
+    else sh.append(content);
+    bd.addEventListener("click", closeSheet);
+    document.body.append(bd, sh);
+    sheetEl = sh; sheetBd = bd;
+    requestAnimationFrame(function(){ bd.classList.add("open"); sh.classList.add("open"); });
+  }
+
+  // ─── Modal ───
+  var modalEl = null;
+  function closeModal(){
+    if(!modalEl) return;
+    var m = modalEl;
+    modalEl = null;
+    m.classList.remove("open");
+    setTimeout(function(){ m.remove(); }, 220);
+  }
+  function openModal(opts){
+    if(modalEl){ modalEl.remove(); modalEl = null; }
+    var card = h("div",{class:"modal-card"});
+    if(opts.title) card.append(h("div",{class:"modal-head"},opts.title));
+    var body = h("div",{class:"modal-body"});
+    if(typeof opts.content==="string") body.innerHTML = opts.content;
+    else if(opts.content) body.append(opts.content);
+    card.append(body);
+    var acts = opts.actions||[];
+    if(acts.length){
+      var act = h("div",{class:"modal-actions"});
+      acts.forEach(function(a){
+        var b = h("button",{class:"Button "+(a.kind||"text")},a.label);
+        b.onclick = function(){ closeModal(); if(a.onClick) setTimeout(a.onClick, 150); };
+        act.append(b);
+      });
+      card.append(act);
+    }
+    var bd = h("div",{class:"modal-backdrop"},card);
+    bd.addEventListener("mousedown", function(e){ if(e.target===bd) closeModal(); });
+    document.body.append(bd);
+    modalEl = bd;
+    requestAnimationFrame(function(){ bd.classList.add("open"); });
+  }
+  function confirmModal(o){
+    openModal({
+      title: o.title,
+      content: o.message ? h("div",{class:"sub"},o.message) : null,
+      actions: [
+        {label:"لغو"},
+        {label: o.confirmLabel||"تایید", kind: o.danger?"danger":"primary",
+         onClick: o.onConfirm}
+      ]
+    });
+  }
+
+  function showMoreMenu(){
+    var wrap = h("div");
+    wrap.append(h("div",{class:"sheet-title"},"حساب‌ها"));
+    CS.accounts.forEach(function(a){
+      var active = String(a.id)===String(CS.aid);
+      var item = h("button",{class:"sheet-item"+(active?" active":"")},
+        h("span",{class:"icon",html: active?ICON.check:ICON.user}),
+        h("div",{class:"label"},
+          h("div",null, a.name||a.phone||"اکانت"),
+          a.phone ? h("div",{class:"hint"},a.phone) : null));
+      item.onclick = function(){
+        closeSheet();
+        if(!active) switchAccount(a.id);
+      };
+      wrap.append(item);
+    });
+    var addBtn = h("button",{class:"sheet-item"},
+      h("span",{class:"icon",html:ICON.user}),
+      h("div",{class:"label"},h("div",null,"افزودن / مدیریت اکانت")));
+    addBtn.onclick = function(){
+      closeSheet();
+      setTimeout(function(){ location.href="/accounts"; }, 150);
+    };
+    wrap.append(addBtn);
+    var settingsBtn = h("button",{class:"sheet-item"},
+      h("span",{class:"icon",html:ICON.cog}),
+      h("div",{class:"label"},h("div",null,"تنظیمات")));
+    settingsBtn.onclick = function(){
+      closeSheet();
+      setTimeout(function(){ location.href="/settings/"+encodeURIComponent(CS.aid||""); }, 150);
+    };
+    wrap.append(settingsBtn);
+    openSheet(wrap);
+  }
+
+  function switchAccount(aid){
+    if(String(aid)===String(CS.aid)) return;
+    if(CS.wsListSubs.length && WS.ready()) WS.send({type:"list_unsubscribe",aid:CS.aid});
+    CS.wsListSubs = [];
+    CS.aid = String(aid);
+    CS.all = { pv: [], groups: [], channels: [], bots: [] };
+    CS.itemEls.clear();
+    applyFilter();
+    loadChats();
+  }
+
+  function chatActions(c){
+    var isGrp = c.type==="Group";
+    var isCh  = c.type==="Channel";
+    var url = function(g){
+      return "/api/accounts/"+CS.aid+"/chats/"+encodeURIComponent(g);
+    };
+    var run = async function(label, fn){
+      try{ await fn(); toast(label); }
+      catch(e){ toast(e.message||"ناموفق"); }
+    };
+    var items = [];
+    if(isGrp || isCh){
+      items.push({icon:ICON.logout, variant:"danger",
+        label: isGrp ? "خروج از گروه" : "لغو اشتراک",
+        onSelect: function(){
+          confirmModal({
+            title: isGrp ? "خروج از گروه؟" : "لغو اشتراک؟",
+            message: extractName(c),
+            danger: true,
+            confirmLabel: isGrp ? "خروج" : "لغو اشتراک",
+            onConfirm: function(){
+              run(isGrp ? "خارج شدی" : "لغو شد", function(){
+                return API.post(url(c.guid)+"/leave",{type:c.type});
+              });
+            }
+          });
+        }});
+    }
+    items.push({icon:ICON.broom, variant:"danger", label:"پاک کردن تاریخچه",
+      onSelect: function(){
+        confirmModal({
+          title:"پاک کردن تاریخچه؟",
+          message: extractName(c),
+          danger: true,
+          confirmLabel:"پاک کن",
+          onConfirm: function(){
+            run("پاک شد", async function(){
+              await API.post(url(c.guid)+"/clear");
+              c.last_text = ""; c.last_time = 0;
+              c.last_type = ""; c.last_is_mine = false;
+              var row = CS.itemEls.get(c.guid);
+              if(row) fillRow(row, c);
+            });
+          }
+        });
+      }});
+    items.push({icon:ICON.trash, variant:"danger", label:"حذف چت",
+      onSelect: function(){
+        confirmModal({
+          title:"حذف چت؟",
+          message: extractName(c),
+          danger: true,
+          confirmLabel:"حذف کن",
+          onConfirm: function(){
+            run("حذف شد", async function(){
+              await API.post(url(c.guid)+"/remove",{type:c.type});
+              ["pv","groups","channels","bots"].forEach(function(k){
+                CS.all[k] = (CS.all[k]||[]).filter(function(x){ return x.guid!==c.guid; });
+              });
+              var row = CS.itemEls.get(c.guid);
+              if(row && row.parentNode) row.parentNode.removeChild(row);
+              CS.itemEls.delete(c.guid);
+            });
+          }
+        });
+      }});
+    openMenu({items: items, chat: c});
+  }
+
+  function openMenu(opts){
+    var wrap = h("div");
+    wrap.append(h("div",{class:"sheet-title"},extractName(opts.chat)));
+    opts.items.forEach(function(it){
+      var item = h("button",{class:"sheet-item "+(it.variant||"")},
+        h("span",{class:"icon",html:it.icon}),
+        h("div",{class:"label"},h("div",null,it.label)));
+      item.onclick = function(){
+        closeSheet();
+        setTimeout(function(){ it.onSelect(); }, 100);
+      };
+      wrap.append(item);
+    });
+    openSheet(wrap);
+  }
+
+  // ─── Tabs ───
+  function bindTabs(){
+    $$("#tabs .Tab").forEach(function(b){
+      b.onclick = function(){
+        if(b.classList.contains("active")) return;
+        $$("#tabs .Tab").forEach(function(x){ x.classList.remove("active"); });
+        b.classList.add("active");
+        CS.tab = b.dataset.t;
+        $("#chatScroll").scrollTop = 0;
+        applyFilter();
+      };
+    });
+  }
+
+  // ─── WebSocket ───
+  var WS = (function(){
+    var sock = null, retry = 0, ping = null, timer = null;
+    function schedule(){
+      clearTimeout(timer);
+      retry = Math.min(retry+1, 8);
+      timer = setTimeout(connect, Math.min(800*retry, 6000));
+    }
+    function connect(){
+      if(sock && sock.readyState<=1) return;
+      clearTimeout(timer);
+      updateConnDot("connecting");
+      var tok = Token();
+      var proto = location.protocol==="https:" ? "wss:" : "ws:";
+      var s;
+      try{
+        s = new WebSocket(proto+"//"+location.host+"/ws"+(tok?"?token="+encodeURIComponent(tok):""));
+      }catch(e){ updateConnDot("offline"); schedule(); return; }
+      sock = s;
+      s.onopen = function(){
+        if(sock !== s) return;
+        retry = 0;
+        updateConnDot("on");
+        clearInterval(ping);
+        ping = setInterval(function(){
+          if(s.readyState===1) s.send("ping");
+        }, 20000);
+      };
+      s.onclose = function(){
+        if(sock !== s) return;
+        sock = null;
+        clearInterval(ping);
+        ping = null;
+        updateConnDot("offline");
+        schedule();
+      };
+      s.onerror = function(){ try{ s.close(); }catch(e){} };
+      s.onmessage = function(e){
+        if(e.data === "pong") return;
+        var j;
+        try{ j = JSON.parse(e.data); }catch(err){ return; }
+        if(j.type === "new_messages" && j.aid === CS.aid){
+          onLiveMessages(j);
+        }
+      };
+    }
+    return {
+      connect: connect,
+      send: function(o){
+        if(sock && sock.readyState===1){ sock.send(JSON.stringify(o)); return true; }
+        return false;
+      },
+      ready: function(){ return sock && sock.readyState===1; }
+    };
+  })();
+
+  function findChat(guid){
+    var keys = ["pv","groups","channels","bots"];
+    for(var i=0;i<keys.length;i++){
+      var c = (CS.all[keys[i]]||[]).find(function(x){ return x.guid===guid; });
+      if(c) return c;
+    }
+    return null;
+  }
+
+  function moveTop(c){
+    ["pv","groups","channels","bots"].forEach(function(k){
+      var arr = CS.all[k]||[];
+      var i = arr.findIndex(function(x){ return x.guid===c.guid; });
+      if(i > 0){ arr.splice(i,1); arr.unshift(c); }
+    });
+  }
+
+  function moveRowTop(c){
+    if(CS.view.indexOf(c) < 0) return;
+    var list = $("#chatList");
+    if(!list) return;
+    var row = CS.itemEls.get(c.guid);
+    var isNew = !row || !row.isConnected;
+    if(isNew){
+      var empty = $(".empty", list);
+      if(empty) empty.remove();
+      row = buildRow(c);
+    } else {
+      fillRow(row, c);
+    }
+    if(list.firstChild !== row) list.insertBefore(row, list.firstChild);
+  }
+
+  function onLiveMessages(j){
+    var guid = j.guid;
+    var c = findChat(guid);
+    if(!c) return;
+    var msgs = j.messages || [];
+    if(!msgs.length) return;
+    var last = msgs[0];
+    msgs.forEach(function(m){
+      var t = parseInt(m.time)||0;
+      if(t >= (parseInt(last.time)||0)) last = m;
+    });
+    c.last_text = (last.text||"").slice(0,140);
+    c.last_time = parseInt(last.time)||0;
+    if(c.last_time > 1e12) c.last_time = Math.floor(c.last_time/1000);
+    c.last_is_mine = !!last.is_mine;
+    c.last_type = last.type || "Text";
+    moveTop(c);
+    CS.view.sort(function(a,b){ return (b.last_time||0)-(a.last_time||0); });
+    moveRowTop(c);
+  }
+
+  // ─── Boot ───
+  (async function(){
+    mountHeader();
+    bindTabs();
+    try{ await API.get("/api/me"); }
+    catch(e){ return; }
+    WS.connect();
+    var ok = await initAccounts();
+    if(ok) await loadChats();
+  })();
+})();
+</script>
+</body>
+</html>

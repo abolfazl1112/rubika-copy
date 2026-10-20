@@ -1,0 +1,32 @@
+__pycache__/
+*.pyc
+*.pyo
+*.bak
+*.log
+*.tmp
+*.rp
+*.swp
+
+.env
+.env.*
+web_sessions.json
+tg_owner.json
+accounts.json
+multi_config.json
+queue.json
+ops.json
+errors.json
+batches.json
+
+media/
+Rubika Images/
+Rubika Video/
+
+# Private account data and sessions
+accounts.json
+tg_owner.json
+web_sessions.json
+*.rp
+.env
+__pycache__/
+*.pyc

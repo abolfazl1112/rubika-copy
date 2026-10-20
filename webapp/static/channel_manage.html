@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>مدیریت کانال</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f1f1f3;--bg3:#e7e7ea;--text:#0f0f10;--text2:#707579;--icon2:#707579;
+--meta:#8b8f95;--border:#e6e8ec;--divider:#d5d9df;--primary:#3390ec;
+--primary-tint:rgba(51,144,236,.1);--danger:#e53935;--success:#22c55e;--warn:#f59e0b;
+--font:"Vazirmatn",-apple-system,system-ui,sans-serif;--font-round:"Nunito","Vazirmatn",sans-serif;
+--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+html.theme-dark{--bg:#18191c;--bg2:#232529;--bg3:#2b2e33;--text:#f3f4f6;--text2:#a9adb4;
+--icon2:#a9adb4;--meta:#82868d;--border:#2b2e33;--divider:#3a3e45;
+--primary:#a08eff;--primary-tint:rgba(160,142,255,.14);color-scheme:dark}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);font-size:16px;line-height:1.5;color:var(--text);
+background:var(--bg);-webkit-font-smoothing:antialiased;user-select:none;direction:rtl}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;outline:none;padding:0}
+input,textarea{font:inherit;color:inherit;outline:none;border:0;background:none}
+.icon{display:inline-flex;width:1.5rem;height:1.5rem;flex-shrink:0}
+.icon svg{width:100%;height:100%;display:block}
+.app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+
+.TopBar{display:flex;align-items:center;gap:.5rem;padding:.5rem;
+padding-top:calc(.75rem + var(--safe-top));
+background:color-mix(in srgb,var(--bg) 88%,transparent);
+-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+border-bottom:1px solid var(--border);flex-shrink:0;min-height:3.75rem;z-index:5}
+.TopBar .icon-btn{width:2.5rem;height:2.5rem;border-radius:50%;display:flex;
+align-items:center;justify-content:center;color:var(--icon2);transition:background .15s}
+.TopBar .icon-btn:hover{background:var(--primary-tint);color:var(--primary)}
+.TopBar .title{flex:1;font-size:1.0625rem;font-weight:600;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+
+.scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+-webkit-overflow-scrolling:touch;padding-bottom:3rem}
+
+.hero-c{padding:2rem 1.25rem 1.75rem;
+display:flex;flex-direction:column;align-items:center;text-align:center;
+gap:.875rem;
+background:linear-gradient(135deg,
+  color-mix(in srgb,var(--primary) 12%,var(--bg)) 0%,
+  color-mix(in srgb,var(--primary) 4%,var(--bg2)) 100%);
+border-bottom:1px solid var(--border)}
+.hero-c .av{width:6.5rem;height:6.5rem;border-radius:50%;flex-shrink:0;
+overflow:hidden;position:relative;
+display:flex;align-items:center;justify-content:center;
+color:#fff;font-family:var(--font-round);font-weight:700;font-size:2.5rem;
+border:4px solid var(--bg);box-shadow:0 8px 32px rgba(0,0,0,.14);
+cursor:pointer;transition:transform .15s}
+.hero-c .av:hover{transform:scale(1.03)}
+.hero-c .av:active{transform:scale(.97)}
+.hero-c .av img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-c .name{font-size:1.375rem;font-weight:700;color:var(--text);
+line-height:1.25;max-width:100%;word-break:break-word}
+.hero-c .sub{font-size:.875rem;color:var(--text2);direction:ltr;
+font-family:ui-monospace,monospace}
+.hero-c .badge{display:inline-flex;align-items:center;gap:.375rem;
+padding:.3125rem .875rem;background:var(--primary-tint);color:var(--primary);
+border-radius:999px;font-size:.8125rem;font-weight:500}
+.hero-c .badge.pub{background:rgba(34,197,94,.12);color:#22c55e}
+.hero-c .badge .icon{width:.875rem;height:.875rem}
+.hero-c .hint-change{font-size:.6875rem;color:var(--text2);margin-top:.25rem}
+
+.section{padding:0 1rem;margin-bottom:.75rem;margin-top:.75rem}
+.section-title{font-size:.6875rem;font-weight:600;color:var(--text2);
+padding:.5rem .375rem .375rem;text-transform:uppercase;letter-spacing:.05em;
+display:flex;align-items:center;justify-content:space-between}
+
+.info-card{background:var(--bg2);border-radius:1rem;padding:.75rem 1rem}
+.info-line{display:flex;align-items:center;justify-content:space-between;
+padding:.5rem 0;border-bottom:1px solid var(--border);gap:.5rem}
+.info-line:last-child{border-bottom:0}
+.info-line .lbl{font-size:.8125rem;color:var(--text2);flex-shrink:0}
+.info-line .val{font-size:.875rem;color:var(--text);font-weight:500;
+max-width:65%;text-align:left;direction:ltr;
+overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+
+/* Bio */
+.bio-card{background:var(--bg2);border-radius:1rem;padding:1rem 1.125rem;direction:rtl}
+.bio-card .bio-txt{font-size:.9375rem;color:var(--text);line-height:1.7;
+white-space:pre-wrap;word-break:break-word;text-align:right;
+width:100%;display:block}
+.bio-card .bio-empty{font-size:.875rem;color:var(--text2);
+font-style:italic;text-align:center}
+
+/* Invite box */
+.invite-card{background:var(--bg2);border-radius:1rem;padding:1rem 1.125rem;
+display:flex;flex-direction:column;gap:.75rem}
+.invite-card .inv-lbl{font-size:.75rem;color:var(--text2);font-weight:600}
+.invite-card .inv-link{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:.75rem;padding:.75rem 1rem;
+  font-family:ui-monospace,monospace;font-size:.75rem;
+  direction:ltr;text-align:left;color:var(--text);
+  word-break:break-all;user-select:text;cursor:text}
+.invite-card .inv-empty{
+  background:var(--bg);border:1px dashed var(--border);
+  border-radius:.75rem;padding:.75rem 1rem;
+  text-align:center;color:var(--text2);font-size:.8125rem}
+.invite-card .inv-actions{display:flex;gap:.5rem}
+.invite-card .inv-actions button{
+  flex:1;height:2.75rem;border-radius:.875rem;
+  font-size:.875rem;font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,transform .12s}
+.invite-card .inv-actions .btn-copy{background:var(--primary);color:#fff}
+.invite-card .inv-actions .btn-copy:hover{background:color-mix(in srgb,var(--primary) 88%,#000)}
+.invite-card .inv-actions .btn-regen{background:var(--bg);color:var(--text);
+border:1px solid var(--border)}
+.invite-card .inv-actions .btn-regen:hover{background:var(--bg3)}
+.invite-card .inv-actions button:active{transform:scale(.98)}
+.invite-card .inv-actions button.loading{opacity:.7;pointer-events:none}
+
+/* Steps guide */
+.steps-guide{display:flex;flex-direction:column;gap:.5rem;padding:.75rem 0}
+.step-item{display:flex;gap:.75rem;padding:.875rem 1rem;
+background:var(--bg);border-radius:.875rem;
+border:1.5px solid var(--border);transition:border-color .15s}
+.step-item.done{border-color:rgba(34,197,94,.4);
+background:rgba(34,197,94,.06)}
+.step-item.active{border-color:var(--primary);background:var(--primary-tint)}
+.step-item .st-num{width:1.75rem;height:1.75rem;border-radius:50%;
+flex-shrink:0;display:flex;align-items:center;justify-content:center;
+font-size:.8125rem;font-weight:700;
+background:var(--bg3);color:var(--text2)}
+.step-item.done .st-num{background:var(--success);color:#fff}
+.step-item.active .st-num{background:var(--primary);color:#fff}
+.step-item .st-body{flex:1;min-width:0}
+.step-item .st-title{font-size:.875rem;font-weight:600;color:var(--text);
+margin-bottom:.1875rem}
+.step-item .st-desc{font-size:.75rem;color:var(--text2);line-height:1.55}
+.step-item.done .st-title{color:var(--success)}
+.step-item.active .st-title{color:var(--primary)}
+.step-item.done .st-desc{color:var(--text2)}
+.manual-badge{display:inline-block;padding:.125rem .4375rem;
+background:rgba(245,158,11,.15);color:var(--warn);
+border-radius:.375rem;font-size:.625rem;font-weight:600;
+margin-inline-start:.375rem;vertical-align:middle}
+.step-item .st-action{margin-top:.5rem}
+.step-item .st-action button{
+  padding:.5rem .875rem;border-radius:.625rem;
+  background:var(--primary);color:#fff;font-size:.75rem;font-weight:600;
+  transition:background .15s,transform .12s}
+.step-item .st-action button:hover{background:color-mix(in srgb,var(--primary) 88%,#000)}
+.step-item .st-action button:active{transform:scale(.97)}
+.step-item .st-action button.loading{opacity:.7;pointer-events:none}
+
+
+.actions{display:flex;flex-direction:column;gap:.375rem}
+.big-btn{position:relative;display:flex;align-items:center;gap:.875rem;
+padding:.6875rem .875rem;background:var(--bg2);border-radius:.875rem;
+color:var(--text);text-align:right;width:100%;
+transition:background .15s,transform .12s;cursor:pointer}
+.big-btn:hover{background:var(--bg3)}
+.big-btn:active{transform:scale(.99)}
+.big-btn .b-ico{width:2rem;height:2rem;border-radius:.625rem;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+background:var(--primary-tint);color:var(--primary)}
+.big-btn .b-ico .icon{width:1rem;height:1rem}
+.big-btn .b-title{flex:1;min-width:0;font-size:.9375rem;font-weight:500;color:var(--text)}
+.big-btn .b-arrow{width:1rem;height:1rem;color:var(--icon2);flex-shrink:0;opacity:.5}
+.big-btn.danger .b-ico{background:rgba(229,57,53,.12);color:var(--danger)}
+.big-btn.danger .b-title{color:var(--danger)}
+.big-btn.loading{opacity:.7;cursor:wait;pointer-events:none}
+
+/* Channel list */
+.chan-list-card{background:var(--bg2);border-radius:1rem;padding:.5rem}
+.chan-row{display:flex;align-items:center;gap:.75rem;
+padding:.625rem .75rem;border-radius:.75rem;
+transition:background .15s;cursor:pointer}
+.chan-row:hover{background:var(--bg3)}
+.chan-row .cr-ico{width:2.25rem;height:2.25rem;border-radius:.625rem;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+background:var(--primary-tint);color:var(--primary);
+overflow:hidden;font-weight:700;font-family:var(--font-round);font-size:.875rem}
+.chan-row .cr-ico img{width:100%;height:100%;object-fit:cover}
+.chan-row .cr-body{flex:1;min-width:0}
+.chan-row .cr-title{font-size:.875rem;font-weight:500;color:var(--text);
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chan-row .cr-sub{font-size:.6875rem;color:var(--text2);margin-top:.0625rem;
+direction:ltr;text-align:left;font-family:ui-monospace,monospace}
+.chan-row .cr-del{width:2rem;height:2rem;border-radius:50%;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+background:rgba(229,57,53,.1);color:var(--danger);transition:background .15s}
+.chan-row .cr-del:hover{background:rgba(229,57,53,.2)}
+.chan-row .cr-del .icon{width:1rem;height:1rem}
+
+/* Sheet */
+.sheet-backdrop{position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,.45);
+opacity:0;visibility:hidden;transition:opacity .28s,visibility 0s linear .28s}
+.sheet-backdrop.open{opacity:1;visibility:visible;
+transition:opacity .28s,visibility 0s linear 0s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11001;
+background:var(--bg);border-radius:1.75rem 1.75rem 0 0;
+box-shadow:0 -12px 48px rgba(0,0,0,.18);
+transform:translateY(100%);display:flex;flex-direction:column;
+height:auto;max-height:90dvh;will-change:transform;
+transition:transform .35s cubic-bezier(.2,.9,.3,1);
+padding-bottom:var(--safe-bottom);overflow:hidden}
+.sheet.open{transform:translateY(0)}
+.sheet-grip{padding:.75rem 0 .25rem;display:flex;justify-content:center}
+.sheet-grip .bar{width:2.5rem;height:.3125rem;border-radius:999px;background:var(--divider)}
+.sheet-head{padding:.25rem 1.25rem .75rem;flex-shrink:0;
+display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+border-bottom:1px solid var(--border)}
+.sheet-head .s-title{font-size:1.125rem;font-weight:600;color:var(--text)}
+.sheet-head .s-close{width:2rem;height:2rem;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+color:var(--icon2);transition:background .15s}
+.sheet-head .s-close:hover{background:var(--primary-tint);color:var(--primary)}
+.sheet-body{flex:1;min-height:0;overflow-y:auto;padding:1rem 1.25rem}
+.form-field{margin-bottom:1rem}
+.form-field label{display:block;font-size:.75rem;font-weight:600;
+color:var(--text2);margin-bottom:.375rem}
+.form-field input,.form-field textarea{width:100%;padding:.75rem 1rem;
+background:var(--bg2);border-radius:.875rem;font-size:.9375rem;
+color:var(--text);border:1.5px solid transparent;
+transition:border-color .15s,background .15s;font-family:inherit}
+.form-field input:focus,.form-field textarea:focus{
+  border-color:var(--primary);background:var(--bg)}
+.form-field textarea{resize:none;min-height:6rem;line-height:1.6;direction:rtl}
+.sheet-actions{padding:.75rem 1.25rem 1.25rem;display:flex;gap:.5rem;
+border-top:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.sheet-actions button{flex:1;height:3rem;border-radius:1.5rem;
+font-size:.9375rem;font-weight:600;transition:background .15s,transform .12s}
+.sheet-actions .btn-cancel{background:var(--bg2);color:var(--text)}
+.sheet-actions .btn-cancel:hover{background:var(--bg3)}
+.sheet-actions .btn-submit{background:var(--primary);color:#fff}
+.sheet-actions button:active{transform:scale(.98)}
+.sheet-actions button.loading{opacity:.7;cursor:wait;pointer-events:none}
+.hint-text{font-size:.75rem;color:var(--text2);margin-top:.375rem;line-height:1.6}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.45);
+display:flex;align-items:center;justify-content:center;padding:1rem;
+opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s linear .2s}
+.modal-backdrop.open{opacity:1;visibility:visible;
+transition:opacity .2s,visibility 0s linear 0s}
+.modal{width:100%;max-width:24rem;background:var(--bg);border-radius:1.5rem;
+box-shadow:0 12px 40px rgba(0,0,0,.25);transform:scale(.94);
+transition:transform .25s cubic-bezier(.2,.9,.3,1);overflow:hidden}
+.modal-backdrop.open .modal{transform:scale(1)}
+.modal-head{padding:1.25rem 1.5rem .5rem;font-size:1.125rem;font-weight:600}
+.modal-body{padding:.25rem 1.5rem 1rem;font-size:.9375rem;color:var(--text2);line-height:1.65}
+.modal-actions{display:flex;justify-content:flex-end;gap:.25rem;padding:.5rem 1rem 1rem;flex-wrap:wrap}
+.btn-t{height:2.5rem;padding:0 1.25rem;border-radius:1.75rem;
+font-size:.9375rem;font-weight:500;color:var(--primary);
+display:inline-flex;align-items:center;justify-content:center}
+.btn-t:hover{background:var(--primary-tint)}
+.btn-t.danger{color:var(--danger)}
+.btn-t.danger:hover{background:rgba(229,57,53,.1)}
+
+.toast-wrap{position:fixed;top:calc(.75rem + var(--safe-top));left:0;right:0;
+z-index:20000;display:flex;flex-direction:column;align-items:center;
+gap:.5rem;pointer-events:none;padding:0 .75rem}
+.toast{display:flex;align-items:center;gap:.625rem;max-width:24rem;
+padding:.875rem 1rem;border-radius:1rem;background:#1c1c1eff;color:#fff;
+font-size:.9375rem;line-height:1.4;animation:toastIn .25s}
+.toast.err{background:#7f1d1dee}
+.toast.ok{background:#14532dee}
+.toast.out{opacity:0;transform:translateY(-.5rem);transition:opacity .2s,transform .2s}
+@keyframes toastIn{from{opacity:0;transform:translateY(-.75rem)}to{opacity:1;transform:none}}
+
+.sk{background:linear-gradient(90deg,var(--bg2) 0%,
+  color-mix(in srgb,var(--bg2) 60%,var(--text2) 8%) 50%,var(--bg2) 100%);
+background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite;
+border-radius:.5rem}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-hero{padding:2rem 1.25rem;display:flex;flex-direction:column;
+align-items:center;gap:.75rem;border-bottom:1px solid var(--border)}
+.sk-av{width:6.5rem;height:6.5rem;border-radius:50%}
+.sk-line{height:1rem;width:50%;border-radius:.5rem}
+.sk-sec{padding:0 1rem;margin-top:1rem}
+.sk-t{height:.75rem;width:30%;border-radius:.5rem;margin-bottom:.5rem}
+.sk-row{height:3rem;border-radius:.875rem;margin-bottom:.375rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="TopBar" id="top"></div>
+  <div class="scroll" id="scroll"><div id="content"></div></div>
+</div>
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-grip"><div class="bar"></div></div>
+  <div class="sheet-head">
+    <div class="s-title" id="sheetTitle"></div>
+    <button class="s-close" id="sheetClose">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+    </button>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+  <div class="sheet-actions" id="sheetActions"></div>
+</div>
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalBox"></div></div>
+<div class="toast-wrap" id="toastWrap"></div>
+<input type="file" id="photoInput" accept="image/*" style="display:none">
+
+<script>
+"use strict";
+(function(){
+  try{ if(localStorage.getItem("rb_theme")==="dark") document.documentElement.classList.add("theme-dark"); }catch(e){}
+  var $=function(s,r){return (r||document).querySelector(s)};
+  function h(t,a){var k=Array.prototype.slice.call(arguments,2);var e=document.createElement(t);
+    for(var key in (a||{})){var v=a[key];if(v==null||v===false)continue;
+      if(key==="class")e.className=v;
+      else if(key==="html")e.innerHTML=v;
+      else if(key==="style")e.setAttribute("style",v);
+      else if(key.indexOf("on")===0&&typeof v==="function")e.addEventListener(key.slice(2),v);
+      else e.setAttribute(key,v);}
+    k.forEach(function(x){(Array.isArray(x)?x:[x]).forEach(function(y){
+      if(y==null||y===false)return;e.append(y.nodeType?y:document.createTextNode(String(y)));});});
+    return e;}
+  function svgp(p){return '<span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg></span>'}
+  var ICON={
+    back:svgp('<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>'),
+    broadcast:svgp('<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>'),
+    lock:svgp('<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+    globe:svgp('<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'),
+    edit:svgp('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'),
+    image:svgp('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>'),
+    at:svgp('<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>'),
+    trash:svgp('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>'),
+    user:svgp('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    arrow:svgp('<polyline points="15 18 9 12 15 6"/>')
+  };
+  var PEER=[["#FF845E","#D45246"],["#FEBB5B","#F68136"],["#B694F9","#6C61DF"],
+    ["#9AD164","#46BA43"],["#53EDD6","#28C9B7"],["#5CAFFA","#408ACF"],["#FF8AAC","#D95574"]];
+  function avatarBg(s){var x=0;for(var i=0;i<(s||"").length;i++)x=(x*31+s.charCodeAt(i))|0;
+    var p=PEER[Math.abs(x)%PEER.length];return "linear-gradient(180deg,"+p[0]+" 0%,"+p[1]+" 100%)"}
+  function initials(name){if(!name)return "?";var p=String(name).trim().split(/[\s\u200c]+/).filter(Boolean);
+    if(!p.length)return "?";return p.length>=2?(Array.from(p[0])[0]||"")+(Array.from(p[1])[0]||""):
+      Array.from(p[0]).slice(0,2).join("")}
+  function Token(){try{return localStorage.getItem("rb_token")}catch(e){return null}}
+  function toast(msg,kind){var t=h("div",{class:"toast "+(kind||"")},h("span",null,String(msg)));
+    $("#toastWrap").append(t);setTimeout(function(){t.classList.add("out");
+      setTimeout(function(){t.remove()},220)},3200)}
+  function authHeaders(){var t=Token();return t?{"Authorization":"Bearer "+t}:{}}
+  var API={
+    get:async function(p){var r=await fetch(p,{credentials:"same-origin",headers:authHeaders()});
+      if(r.status===401){location.href="/login";throw new Error("unauth")}
+      var j=await r.json().catch(function(){return {}});
+      if(!r.ok){var e=new Error((j.detail&&typeof j.detail==="string")?j.detail:("HTTP "+r.status));e.status=r.status;throw e}
+      return j},
+    post:async function(p,b){var hd=Object.assign({"Content-Type":"application/json"},authHeaders());
+      var r=await fetch(p,{method:"POST",credentials:"same-origin",headers:hd,body:JSON.stringify(b||{})});
+      if(r.status===401){location.href="/login";throw new Error("unauth")}
+      var j=await r.json().catch(function(){return {}});
+      if(!r.ok){var e=new Error((j.detail&&typeof j.detail==="string")?j.detail:("HTTP "+r.status));e.status=r.status;throw e}
+      return j},
+    put:async function(p,b){var hd=Object.assign({"Content-Type":"application/json"},authHeaders());
+      var r=await fetch(p,{method:"PUT",credentials:"same-origin",headers:hd,body:JSON.stringify(b||{})});
+      if(r.status===401){location.href="/login";throw new Error("unauth")}
+      var j=await r.json().catch(function(){return {}});
+      if(!r.ok){var e=new Error((j.detail&&typeof j.detail==="string")?j.detail:("HTTP "+r.status));e.status=r.status;throw e}
+      return j},
+    del:async function(p){var r=await fetch(p,{method:"DELETE",credentials:"same-origin",headers:authHeaders()});
+      if(r.status===401){location.href="/login";throw new Error("unauth")}
+      var j=await r.json().catch(function(){return {}});
+      if(!r.ok){var e=new Error((j.detail&&typeof j.detail==="string")?j.detail:("HTTP "+r.status));e.status=r.status;throw e}
+      return j}
+  };
+
+  var parts=location.pathname.split("/").filter(Boolean);
+  var AID=parts[1]?decodeURIComponent(parts[1]):"";
+  var GUID=parts[2]?decodeURIComponent(parts[2]):"";
+  if(!AID||!GUID){location.href="/manage/"+encodeURIComponent(AID||"");return}
+
+  var channel={guid:GUID,title:"",username:"",description:"",is_public:false};
+  var inviteLink="";
+  var AVA_BUST=Date.now();
+
+  var Sheet=(function(){
+    var el,bd,titleEl,bodyEl,actionsEl;
+    function open(title,body,actions){
+      titleEl.textContent=title||"";
+      bodyEl.innerHTML="";
+      if(typeof body==="string")bodyEl.innerHTML=body;
+      else if(body)bodyEl.append(body);
+      actionsEl.innerHTML="";
+      (actions||[]).forEach(function(a){
+        var b=h("button",{class:a.kind==="submit"?"btn-submit":"btn-cancel"},a.label);
+        b.onclick=async function(){
+          if(b.classList.contains("loading")) return;
+          if(!a.onClick) return;
+          var orig=b.textContent;
+          b.classList.add("loading");
+          b.disabled=true;
+          if(a.loadingText) b.textContent=a.loadingText;
+          try{ await Promise.resolve(a.onClick()); }
+          catch(e){ console.error(e); }
+          finally{
+            setTimeout(function(){
+              if(document.body.contains(b)){
+                b.classList.remove("loading");
+                b.disabled=false;
+                b.textContent=orig;
+              }
+            },100);
+          }
+        };
+        actionsEl.append(b);
+      });
+      actionsEl.style.display=(actions&&actions.length)?"flex":"none";
+      el.style.transition="none";
+      el.style.transform="translateY(100%)";
+      bd.classList.add("open");
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          el.classList.add("open");
+          el.style.transition="transform .35s cubic-bezier(.2,.9,.3,1)";
+          el.style.transform="translateY(0)";
+        });
+      });
+    }
+    function close(){
+      bd.classList.remove("open");
+      el.classList.remove("open");
+      el.style.transition="transform .3s cubic-bezier(.2,.9,.3,1)";
+      el.style.transform="translateY(100%)";
+    }
+    function init(){
+      el=$("#sheet");bd=$("#sheetBackdrop");
+      titleEl=$("#sheetTitle");bodyEl=$("#sheetBody");actionsEl=$("#sheetActions");
+      $("#sheetClose").onclick=close;
+      bd.onclick=close;
+      document.addEventListener("keydown",function(e){
+        if(e.key==="Escape"&&bd.classList.contains("open"))close();
+      });
+    }
+    return {init:init,open:open,close:close};
+  })();
+
+  function openModal(opts){
+    var box=$("#modalBox");box.innerHTML="";
+    if(opts.title)box.append(h("div",{class:"modal-head"},opts.title));
+    var body=h("div",{class:"modal-body"});
+    if(typeof opts.content==="string")body.innerHTML=opts.content;
+    else if(opts.content)body.append(opts.content);
+    box.append(body);
+    var actions=opts.actions||[];
+    if(actions.length){
+      var acts=h("div",{class:"modal-actions"});
+      actions.forEach(function(a){
+        var b=h("button",{class:"btn-t "+(a.kind||"")},a.label);
+        b.onclick=function(){closeModal();if(a.onClick)setTimeout(a.onClick,150)};
+        acts.append(b);
+      });
+      box.append(acts);
+    }
+    var bd=$("#modalBackdrop");bd.classList.add("open");
+    bd.onclick=function(e){if(e.target===bd)closeModal()};
+  }
+  function closeModal(){$("#modalBackdrop").classList.remove("open")}
+
+  function copyText(txt,label){
+    if(!txt)return;
+    try{navigator.clipboard.writeText(txt);toast((label||"متن")+" کپی شد","ok")}
+    catch(e){
+      var ta=document.createElement("textarea");ta.value=txt;document.body.append(ta);
+      ta.select();try{document.execCommand("copy")}catch(_){}
+      ta.remove();toast((label||"متن")+" کپی شد","ok");
+    }
+  }
+
+  function withLoading(btn,fn,loadingText){
+    return async function(e){
+      if(btn.classList.contains("loading")) return;
+      var titleEl=btn.querySelector(".b-title")||btn;
+      var orig=titleEl.textContent;
+      btn.classList.add("loading");
+      btn.disabled=true;
+      if(loadingText) titleEl.textContent=loadingText;
+      try{ return await fn(e); }
+      finally{
+        btn.classList.remove("loading");
+        btn.disabled=false;
+        titleEl.textContent=orig;
+      }
+    };
+  }
+  function bigBtn(icon,title,onClick,danger,loadingText){
+    var b=h("button",{class:"big-btn"+(danger?" danger":"")},
+      h("div",{class:"b-ico",html:icon}),
+      h("div",{class:"b-title"},title),
+      h("span",{class:"b-arrow"}));
+    b.onclick=withLoading(b,onClick,loadingText);
+    return b;
+  }
+
+  function buildTop(){
+    var bar=$("#top");bar.innerHTML="";
+    var back=h("button",{class:"icon-btn",html:ICON.back,title:"بازگشت"});
+    back.onclick=function(){location.href="/manage/"+encodeURIComponent(AID)};
+    bar.append(back,h("div",{class:"title"},"مدیریت کانال"),h("div",{style:"width:2.5rem"}));
+  }
+
+  function showSkeleton(){
+    var c=$("#content");c.innerHTML="";
+    c.append(h("div",{class:"sk-hero"},
+      h("div",{class:"sk sk-av"}),
+      h("div",{class:"sk sk-line",style:"width:50%"}),
+      h("div",{class:"sk sk-line",style:"width:30%;height:.75rem"})));
+    [1,2].forEach(function(){
+      c.append(h("div",{class:"sk-sec"},
+        h("div",{class:"sk sk-t"}),
+        h("div",{class:"sk sk-row"}),
+        h("div",{class:"sk sk-row"})));
+    });
+  }
+
+  function buildHero(){
+    var av=h("div",{class:"av",style:"background:"+avatarBg(GUID)});
+    var img=document.createElement("img");
+    img.referrerPolicy="no-referrer";img.alt="";
+    var tries=0;
+    function load(){
+      tries++;
+      img.src="/api/accounts/"+encodeURIComponent(AID)+"/avatar/"+
+              encodeURIComponent(GUID)+"?v="+AVA_BUST+"&r="+tries;
+    }
+    img.onerror=function(){
+      if(tries<2){setTimeout(load,300);return}
+      img.remove();av.textContent=initials(channel.title||"");
+    };
+    load();
+    av.append(img);
+    av.onclick=changePhoto;
+
+    var badge=h("div",{class:"badge"+(channel.username?" pub":"")});
+    if(channel.username){
+      badge.append(h("span",{class:"icon",html:ICON.globe}));
+      badge.append(document.createTextNode("کانال عمومی"));
+    }else{
+      badge.append(h("span",{class:"icon",html:ICON.lock}));
+      badge.append(document.createTextNode("کانال خصوصی"));
+    }
+
+    return h("div",{class:"hero-c"},
+      av,
+      h("div",{class:"name"},channel.title||"بدون نام"),
+      channel.username?h("div",{class:"sub"},"@"+String(channel.username).replace(/^@/,"")):null,
+      badge);
+  }
+
+  function buildBio(){
+    var sec=h("div",{class:"section"});
+    var t=h("div",{class:"section-title"});
+    t.append(h("span",null,"توضیحات"));
+    sec.append(t);
+    var card=h("div",{class:"bio-card"});
+    if(channel.description && channel.description.trim()){
+      card.append(h("div",{class:"bio-txt"},channel.description));
+    }else{
+      card.append(h("div",{class:"bio-empty"},"توضیحاتی ثبت نشده"));
+    }
+    sec.append(card);
+    return sec;
+  }
+
+  function buildInviteCard(){
+    if(channel.username) return null;
+    var sec=h("div",{class:"section"});
+    var t=h("div",{class:"section-title"});
+    t.append(h("span",null,"لینک دعوت"));
+    sec.append(t);
+
+    var card=h("div",{class:"invite-card"});
+
+    if(inviteLink){
+      card.append(h("div",{class:"inv-lbl"},"لینک فعلی"));
+      card.append(h("div",{class:"inv-link"},inviteLink));
+      var actions=h("div",{class:"inv-actions"});
+
+      var copyBtn=h("button",{class:"btn-copy"},h("span",null,"کپی"));
+      copyBtn.onclick=function(){
+        if(!inviteLink){toast("لینک موجود نیست","err");return}
+        copyText(inviteLink,"لینک");
+      };
+
+      var regenBtn=h("button",{class:"btn-regen"},h("span",null,"ساخت لینک جدید"));
+      regenBtn.onclick=withLoading(regenBtn,async function(){
+        try{
+          var r=await API.post("/api/accounts/"+encodeURIComponent(AID)+
+            "/channels/"+encodeURIComponent(GUID)+"/invite",{});
+          if(r.link){
+            toast("لینک جدید ساخته شد","ok");
+            var wrap=h("div");
+            wrap.append(h("div",{style:"font-size:.75rem;color:var(--text2);line-height:1.6;margin-bottom:.75rem"},
+              "لینک جدید ساخته شد. لینک اصلی ثابت می‌ماند."));
+            wrap.append(h("div",{class:"inv-link"},r.link));
+            openModal({title:"لینک جدید",content:wrap,actions:[
+              {label:"بستن"},
+              {label:"کپی",onClick:function(){copyText(r.link,"لینک")}}
+            ]});
+          }else{
+            toast("لینک برنگشت","err");
+          }
+        }catch(e){toast(e.message||"خطا","err")}
+      },"در حال ساخت...");
+
+      actions.append(copyBtn,regenBtn);
+      card.append(actions);
+    }else{
+      card.append(h("div",{class:"inv-empty"},"لینکی ساخته نشده"));
+      var createBtn=h("button",{class:"btn-copy",style:"width:100%;height:3rem"},
+        h("span",null,"ساخت لینک"));
+      createBtn.onclick=withLoading(createBtn,async function(){
+        try{
+          var r=await API.get("/api/accounts/"+encodeURIComponent(AID)+
+            "/channels/"+encodeURIComponent(GUID)+"/invite");
+          if(r.link){
+            inviteLink=r.link;
+            toast("لینک ساخته شد","ok");
+            render();
+          }else{
+            toast("مشکل ساخت لینک — دوباره تلاش کن","err");
+          }
+        }catch(e){toast(e.message||"خطا","err")}
+      },"در حال ساخت...");
+      card.append(createBtn);
+    }
+
+    sec.append(card);
+    return sec;
+  }
+
+  async function showLinkChoice(newLink){
+    var wrap=h("div");
+    wrap.append(h("div",{style:"font-size:.8125rem;color:var(--text2);line-height:1.65;margin-bottom:.875rem"},
+      "لینک جدید ساخته شد. توجه: لینک اصلی کانال همان لینکی است که در اپ ساختی و "+
+      "تغییر نمی‌کند. این لینک جدید، یک لینک فرعی است."));
+    wrap.append(h("div",{class:"inv-link"},newLink));
+    openModal({
+      title:"لینک جدید ساخته شد",
+      content:wrap,
+      actions:[
+        {label:"بستن"},
+        {label:"کپی",onClick:function(){copyText(newLink,"لینک")}}
+      ]
+    });
+  }
+
+  function buildActions(){
+    var sec=h("div",{class:"section"});
+    sec.append(h("div",{class:"section-title"},"عملیات"));
+    var btns=h("div",{class:"actions"});
+
+    btns.append(bigBtn(ICON.edit,"ویرایش عنوان و توضیحات",editInfo));
+    btns.append(bigBtn(ICON.image,"تغییر عکس کانال",changePhoto));
+
+    if(channel.username){
+      btns.append(bigBtn(ICON.at,"تغییر نام کاربری",changeUsername));
+      btns.append(bigBtn(ICON.lock,"تبدیل به خصوصی",makePrivate));
+    }else{
+      btns.append(bigBtn(ICON.at,"تنظیم نام کاربری (تبدیل به عمومی)",setUsername));
+    }
+
+    btns.append(bigBtn(ICON.trash,"حذف کانال",deleteChannel,true));
+
+    sec.append(btns);
+    return sec;
+  }
+
+  function render(){
+    var c=$("#content");c.innerHTML="";
+    c.append(buildHero());
+    c.append(buildBio());
+    var inv=buildInviteCard();
+    if(inv) c.append(inv);
+    c.append(buildActions());
+  }
+
+  async function makePrivate(){
+    if(!confirm("کانال خصوصی بشه؟ یوزرنیم فعلی پاک می‌شه و لینک عضویت ساخته می‌شه."))return;
+    try{
+      var r = await API.post("/api/accounts/"+encodeURIComponent(AID)+
+        "/channels/"+encodeURIComponent(GUID)+"/make-private",{});
+      toast("کانال خصوصی شد","ok");
+      if(r.join_link){
+        toast("لینک ساخته شد","ok");
+      }
+      setTimeout(load,600);
+    }catch(e){toast(e.message||"خطا","err")}
+  }
+
+  function editInfo(){
+    var tInp=h("input",{placeholder:"عنوان",value:channel.title||""});
+    var dInp=h("textarea",{placeholder:"توضیحات",value:channel.description||""});
+    var body=h("div");
+    body.append(field("عنوان",tInp));
+    body.append(field("توضیحات",dInp));
+    Sheet.open("ویرایش اطلاعات",body,[
+      {label:"انصراف",kind:"cancel",onClick:function(){Sheet.close()}},
+      {label:"ذخیره",kind:"submit",loadingText:"در حال ذخیره...",onClick:async function(){
+        try{
+          await API.put("/api/accounts/"+encodeURIComponent(AID)+
+            "/channels/"+encodeURIComponent(GUID),
+            {title:tInp.value.trim(), description:dInp.value.trim()});
+          toast("ذخیره شد","ok");
+          Sheet.close();
+          setTimeout(load,400);
+        }catch(e){toast(e.message||"خطا","err")}
+      }}
+    ]);
+  }
+
+  function changePhoto(){
+    var inp=$("#photoInput");
+    inp.value="";
+    inp.onchange=async function(){
+      var f=inp.files[0];
+      if(!f)return;
+      if(f.size>10*1024*1024){toast("حجم بیش از ۱۰ مگابایت","err");return}
+      var fd=new FormData();
+      fd.append("file",f);
+      toast("در حال آپلود...","ok");
+      try{
+        var r=await fetch("/api/accounts/"+encodeURIComponent(AID)+
+          "/channels/"+encodeURIComponent(GUID)+"/photo",
+          {method:"POST",credentials:"same-origin",headers:authHeaders(),body:fd});
+        if(!r.ok){var j=await r.json().catch(function(){return{}});
+          throw new Error(j.detail||"خطا")}
+        toast("عکس به‌روز شد","ok");
+        AVA_BUST=Date.now();
+        setTimeout(load,500);
+      }catch(e){toast(e.message||"خطا در آپلود","err")}
+    };
+    inp.click();
+  }
+
+  function setUsername(){
+    var uInp=h("input",{placeholder:"my_channel",dir:"ltr"});
+    uInp.style.direction="ltr";
+    var body=h("div");
+    body.append(field("نام کاربری (بدون @)",uInp));
+    body.append(h("div",{class:"hint-text"},
+      "با تنظیم نام کاربری، کانال از خصوصی به عمومی تبدیل می‌شود و قابل جستجو خواهد بود.\n"+
+      "روبیکا اجازه می‌دهد حداکثر ۱۰ نام کاربری داشته باشی."));
+    Sheet.open("تنظیم نام کاربری",body,[
+      {label:"انصراف",kind:"cancel",onClick:function(){Sheet.close()}},
+      {label:"ذخیره",kind:"submit",loadingText:"در حال بررسی...",onClick:async function(){
+        var u=uInp.value.trim().replace(/^@/,"");
+        if(!u){toast("نام را وارد کن","err");return}
+        try{
+          await API.post("/api/accounts/"+encodeURIComponent(AID)+
+            "/channels/"+encodeURIComponent(GUID)+"/username",{username:u});
+          toast("نام کاربری تنظیم شد","ok");
+          Sheet.close();
+          setTimeout(load,500);
+        }catch(e){
+          Sheet.close();
+          var msg=e.message||"خطا";
+          if(msg.indexOf("۱۰")>=0 || msg.indexOf("10")>=0){
+            showUsernameLimitHelp();
+          }else{
+            toast(msg,"err");
+          }
+        }
+      }}
+    ]);
+    setTimeout(function(){try{uInp.focus()}catch(e){}},200);
+  }
+
+  function changeUsername(){
+    var uInp=h("input",{placeholder:"جدید",value:String(channel.username||"").replace(/^@/,""),dir:"ltr"});
+    uInp.style.direction="ltr";
+    var body=h("div");
+    var cur=h("input",{value:"@"+String(channel.username||"").replace(/^@/,"")});
+    cur.disabled=true;
+    body.append(field("نام کاربری فعلی",cur));
+    body.append(field("نام کاربری جدید",uInp));
+    Sheet.open("تغییر نام کاربری",body,[
+      {label:"انصراف",kind:"cancel",onClick:function(){Sheet.close()}},
+      {label:"ذخیره",kind:"submit",loadingText:"در حال بررسی...",onClick:async function(){
+        var u=uInp.value.trim().replace(/^@/,"");
+        if(!u){toast("نام را وارد کن","err");return}
+        try{
+          await API.post("/api/accounts/"+encodeURIComponent(AID)+
+            "/channels/"+encodeURIComponent(GUID)+"/username",{username:u});
+          toast("تغییر کرد","ok");
+          Sheet.close();
+          setTimeout(load,500);
+        }catch(e){
+          Sheet.close();
+          var msg=e.message||"خطا";
+          if(msg.indexOf("۱۰")>=0 || msg.indexOf("10")>=0){
+            showUsernameLimitHelp();
+          }else{
+            toast(msg,"err");
+          }
+        }
+      }}
+    ]);
+  }
+
+  async function showUsernameLimitHelp(){
+    var list=[];
+    try{
+      var r=await API.get("/api/accounts/"+encodeURIComponent(AID)+"/channels-all");
+      list=r.channels||[];
+    }catch(e){}
+    var wrap=h("div");
+    wrap.append(h("div",{style:"font-size:.875rem;color:var(--text);line-height:1.7;margin-bottom:1rem"},
+      "روی این اکانت بیش از ۱۰ نام کاربری ثبت شده. روبیکا اجازه نام کاربری جدید نمی‌ده. "+
+      "برای رهایی، یکی از کانال‌های زیر را حذف کن تا نام کاربری آزاد شود."));
+    var listEl=h("div",{class:"chan-list-card"});
+    list.forEach(function(c){
+      var ico;
+      if(c.guid){
+        var im=document.createElement("img");
+        im.referrerPolicy="no-referrer";im.alt="";
+        im.src="/api/accounts/"+encodeURIComponent(AID)+"/avatar/"+encodeURIComponent(c.guid);
+        ico=h("div",{class:"cr-ico"},im);
+        im.onerror=function(){var p=this.parentNode;p.innerHTML="";
+          p.textContent=initials(c.title||"").slice(0,2)};
+      }else{
+        ico=h("div",{class:"cr-ico"},initials(c.title||"").slice(0,2));
+      }
+      var del=h("button",{class:"cr-del",html:ICON.trash});
+      del.onclick=function(e){e.stopPropagation();deleteChannelFromList(c)};
+      var row=h("div",{class:"chan-row"},
+        ico,
+        h("div",{class:"cr-body"},
+          h("div",{class:"cr-title"},c.title||"بدون نام"),
+          h("div",{class:"cr-sub"},
+            c.username?("@"+String(c.username).replace(/^@/,"")):(c.guid||""))),
+        del);
+      row.onclick=function(){
+        closeModal();
+        setTimeout(function(){
+          location.href="/channel/"+encodeURIComponent(AID)+"/"+encodeURIComponent(c.guid);
+        },200);
+      };
+      listEl.append(row);
+    });
+    if(!list.length){
+      listEl.append(h("div",{style:"padding:1rem;text-align:center;color:var(--text2);font-size:.8125rem"},
+        "کانالی پیدا نشد"));
+    }
+    wrap.append(listEl);
+    openModal({
+      title:"سقف نام کاربری",
+      content:wrap,
+      actions:[
+        {label:"بستن"},
+        {label:"ساخت کانال خصوصی",onClick:goCreatePrivate}
+      ]
+    });
+  }
+
+  async function deleteChannelFromList(c){
+    if(!confirm("کانال «"+(c.title||c.guid)+"» حذف شود؟"))return;
+    try{
+      await API.del("/api/accounts/"+encodeURIComponent(AID)+"/channels/"+encodeURIComponent(c.guid));
+      toast("حذف شد","ok");
+      closeModal();
+    }catch(e){
+      var msg=e.message||"خطا";
+      if(msg.indexOf("۳ روز")>=0 || msg.indexOf("3 روز")>=0 || msg.indexOf("3 days")>=0){
+        openModal({title:"امکان حذف نیست",
+          content:"باید از نشست شما ۳ روز گذشته باشد. ساختار روبیکا اجازه حذف زودتر را نمی‌دهد.\n\n"+
+                  "پیشنهاد: از این اکانت یک کانال خصوصی بساز و از آن استفاده کن.",
+          actions:[{label:"باشه"},{label:"ساخت خصوصی",onClick:goCreatePrivate}]});
+      }else if(msg.indexOf("مالک")>=0 || msg.indexOf("owner")>=0){
+        openModal({title:"دسترسی ندارید",
+          content:"حذف کانال فقط توسط مالک کانال می‌تواند صورت گیرد. این اکانت مالک کانال نیست.",
+          actions:[{label:"باشه"}]});
+      }else{
+        toast(msg,"err");
+      }
+    }
+  }
+
+  function goCreatePrivate(){
+    closeModal();
+    location.href="/manage/"+encodeURIComponent(AID)+"?add=private";
+  }
+
+  function deleteChannel(){
+    openModal({title:"حذف کانال؟",
+      content:"کانال «"+(channel.title||"")+"» برای همیشه حذف می‌شود.",
+      actions:[
+        {label:"لغو"},
+        {label:"حذف",kind:"danger",onClick:async function(){
+          try{
+            await API.del("/api/accounts/"+encodeURIComponent(AID)+"/channels/"+encodeURIComponent(GUID));
+            toast("حذف شد","ok");
+            setTimeout(function(){location.href="/manage/"+encodeURIComponent(AID)},500);
+          }catch(e){
+            var msg=e.message||"خطا";
+            if(msg.indexOf("۳ روز")>=0 || msg.indexOf("3 روز")>=0 || msg.indexOf("3 days")>=0){
+              openModal({title:"امکان حذف نیست",
+                content:"باید از نشست شما ۳ روز گذشته باشد. ساختار روبیکا اجازه حذف زودتر را نمی‌دهد.\n\n"+
+                        "پیشنهاد: از این اکانت یک کانال خصوصی بساز و از آن استفاده کن.",
+                actions:[{label:"باشه"},{label:"ساخت خصوصی",onClick:goCreatePrivate}]});
+            }else if(msg.indexOf("مالک")>=0 || msg.indexOf("owner")>=0){
+              openModal({title:"دسترسی ندارید",
+                content:"حذف کانال فقط توسط مالک کانال می‌تواند صورت گیرد. این اکانت مالک کانال نیست.",
+                actions:[{label:"باشه"}]});
+            }else{
+              toast(msg,"err");
+            }
+          }
+        }}
+      ]});
+  }
+
+  function field(label,inp){
+    var w=h("div",{class:"form-field"});
+    w.append(h("label",null,label),inp);
+    return w;
+  }
+
+  async function load(){
+    showSkeleton();
+    try{
+      var r=await API.get("/api/accounts/"+encodeURIComponent(AID)+
+        "/channels/"+encodeURIComponent(GUID));
+      channel=Object.assign(channel, r||{});
+      // لینک ثابت از GET
+      if(!channel.username){
+        try{
+          var ir=await API.get("/api/accounts/"+encodeURIComponent(AID)+
+            "/channels/"+encodeURIComponent(GUID)+"/invite");
+          inviteLink=ir.link||"";
+        }catch(e){inviteLink=""}
+      }
+      document.title=(channel.title||"کانال")+" — مدیریت";
+      buildTop();
+      render();
+    }catch(e){
+      $("#content").innerHTML='<div style="padding:3rem;text-align:center;color:var(--text2)">'+
+        String(e.message||e)+'</div>';
+    }
+  }
+
+  Sheet.init();
+  load();
+})();
+</script>
+</body>
+</html>

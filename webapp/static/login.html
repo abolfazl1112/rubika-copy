@@ -1,0 +1,214 @@
+cat > /storage/emulated/0/rubika/webapp/static/login.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ورود — پنل روبیکا</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff;--text:#000;--text2:#707579;--primary:#3390ec;
+  --primary2:#2f84d9;--border:#dadce0;--err:#e53935;--ok:#00c73e;
+  --font:'Vazirmatn',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#212121;--text:#fff;--text2:#aaa;--primary:#8774e1;
+        --primary2:#7561d4;--border:#5b5b5a}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  direction:rtl;font-size:16px;line-height:1.5;
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;-webkit-font-smoothing:antialiased;
+}
+.card{width:100%;max-width:22rem;text-align:center}
+.logo{
+  width:5rem;height:5rem;border-radius:50%;
+  background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.25rem;font-size:2rem;font-weight:700;
+}
+h1{font-size:1.5rem;font-weight:600;margin-bottom:.375rem}
+.note{color:var(--text2);font-size:.9375rem;margin-bottom:1.75rem}
+.field{margin-bottom:.875rem;text-align:start}
+.field label{
+  display:block;font-size:.8125rem;color:var(--text2);
+  margin-bottom:.375rem;padding-inline-start:.25rem;
+}
+.field input{
+  width:100%;height:3rem;padding:0 1rem;
+  background:transparent;color:var(--text);
+  border:1px solid var(--border);border-radius:1rem;
+  font-size:1rem;font-family:inherit;
+  text-align:center;letter-spacing:.08em;
+  transition:border-color .15s,box-shadow .15s;
+}
+.field input:focus{
+  outline:none;border-color:var(--primary);
+  box-shadow:inset 0 0 0 1px var(--primary);
+}
+.field input::placeholder{
+  color:var(--text2);opacity:.5;letter-spacing:normal;
+}
+.btn{
+  width:100%;height:3rem;border:none;
+  border-radius:1.75rem;font-family:inherit;
+  font-size:1rem;font-weight:500;cursor:pointer;
+  transition:background-color .15s,transform .1s;
+}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.primary:hover:not(:disabled){background:var(--primary2)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.link{
+  background:transparent;color:var(--text2);
+  height:auto;padding:.5rem;margin-top:.375rem;
+}
+.btn.link:hover{color:var(--text)}
+.msg{
+  min-height:1.25rem;margin-top:.75rem;
+  font-size:.875rem;text-align:center;
+  color:var(--text2);
+}
+.msg.err{color:var(--err)}
+.msg.ok{color:var(--ok)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">ر</div>
+  <h1>ورود به پنل</h1>
+  <p class="note">آیدی عددی تلگرام + کد ۶ رقمی</p>
+
+  <div id="s1">
+    <div class="field">
+      <label>آیدی عددی تلگرام</label>
+      <input id="tgId" type="tel" inputmode="numeric"
+             placeholder="8389746549" autocomplete="off">
+    </div>
+    <button id="reqBtn" class="btn primary">ارسال کد</button>
+  </div>
+
+  <div id="s2" class="hidden">
+    <div class="field">
+      <label>کد ۶ رقمی</label>
+      <input id="code" type="text" inputmode="numeric"
+             maxlength="6" placeholder="123456" autocomplete="off">
+    </div>
+    <button id="verBtn" class="btn primary">ورود</button>
+    <button id="backBtn" class="btn link">بازگشت</button>
+  </div>
+
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════
+   این صفحه هیچ location.reload() یا redirect حلقه‌ای نداره
+   ═══════════════════════════════════════════════════════════════ */
+
+var $ = function(id){ return document.getElementById(id) };
+
+var s1 = $("s1"), s2 = $("s2"), msgEl = $("msg");
+var tgIdI = $("tgId"), codeI = $("code");
+var reqBtn = $("reqBtn"), verBtn = $("verBtn"), backBtn = $("backBtn");
+
+function showMsg(t, k){
+  msgEl.textContent = t || "";
+  msgEl.className = "msg" + (k ? " " + k : "");
+}
+function setBusy(btn, busy, label){
+  if(busy){ btn.disabled = true; btn.textContent = "..." }
+  else{ btn.disabled = false; btn.textContent = label || btn.textContent }
+}
+function post(path, body){
+  return fetch(path, {
+    method: "POST", credentials: "same-origin",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body)
+  }).then(function(r){
+    return r.json().catch(function(){ return {} }).then(function(j){
+      if(!r.ok){
+        var d = j.detail;
+        throw new Error(typeof d === "string" ? d : (d ? JSON.stringify(d) : "خطا"));
+      }
+      return j;
+    });
+  });
+}
+
+reqBtn.onclick = function(){
+  var id = tgIdI.value.trim().replace(/\D/g, "");
+  if(!id){ showMsg("آیدی عددی رو وارد کن", "err"); return }
+  showMsg("");
+  setBusy(reqBtn, true);
+  post("/api/auth/request", {telegram_id: Number(id)})
+    .then(function(){
+      s1.classList.add("hidden");
+      s2.classList.remove("hidden");
+      showMsg("کد به تلگرامت ارسال شد", "ok");
+      codeI.focus();
+    })
+    .catch(function(e){ showMsg(e.message || "ارسال نشد", "err") })
+    .finally(function(){ setBusy(reqBtn, false, "ارسال کد") });
+};
+
+verBtn.onclick = function(){
+  var id = tgIdI.value.trim().replace(/\D/g, "");
+  var c = codeI.value.trim().replace(/\D/g, "");
+  if(!c){ showMsg("کد رو وارد کن", "err"); return }
+  showMsg("");
+  setBusy(verBtn, true);
+  post("/api/auth/verify", {telegram_id: Number(id), code: c})
+    .then(function(r){
+      if(r.token){
+        try{ localStorage.setItem("rb_token", r.token); }catch(e){}
+      }
+      showMsg("ورود موفق...", "ok");
+      setTimeout(function(){ window.location.replace("/dash"); }, 300);
+    })
+    .catch(function(e){
+      showMsg(e.message || "کد اشتباه", "err");
+      setBusy(verBtn, false, "ورود");
+    });
+};
+
+backBtn.onclick = function(){
+  s2.classList.add("hidden");
+  s1.classList.remove("hidden");
+  codeI.value = "";
+  showMsg("");
+};
+
+tgIdI.addEventListener("keydown", function(e){ if(e.key === "Enter") reqBtn.click() });
+codeI.addEventListener("keydown", function(e){ if(e.key === "Enter") verBtn.click() });
+
+/* ═══════════════════════════════════════════════════════════════
+   Boot: فقط یک بار چک می‌کنیم اگه قبلاً لاگین بودی → /dash
+   اگه ۴۰۱ گرفتی، هیچ کاری نمی‌کنیم — فرم نمایش می‌مونه
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  fetch("/api/me", {credentials: "same-origin"})
+    .then(function(r){
+      if(r.ok){
+        window.location.replace("/dash");
+        return;
+      }
+      tgIdI.focus();
+    })
+    .catch(function(){ tgIdI.focus() });
+})();
+</script>
+</body>
+</html>
+HTMLEOF
+echo "✅ login.html نوشته شد"
+wc -c /storage/emulated/0/rubika/webapp/static/login.html
