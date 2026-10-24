@@ -1,9 +1,9 @@
-# Soroosh_tg_bot.py — v27.9.21 (bilingual fa/en · colored buttons · full persian)
+# Soroosh_tg_bot.py — v27.10 (bilingual fa/en · colored buttons · template #IDs · fixed PV · photo priority · channel init msgs)
 import os, sys, json, socket, asyncio, time, re, threading, secrets, random, hashlib
 import logging, traceback, html as _html
 from typing import Optional, Dict, Any, List, Set, Tuple
 
-VERSION = "Soroosh v27.9.21"
+VERSION = "Soroosh v27.10"
 
 def _detect_data_dir():
     env = os.environ.get("DATA_DIR", "").strip()
@@ -195,20 +195,13 @@ _TR = {
 "toggle_off":  {"fa": "خاموش کن",   "en": "turn off"},
 "on":          {"fa": "روشن",       "en": "on"},
 "off":         {"fa": "خاموش",      "en": "off"},
-"yes_short":   {"fa": "بله",        "en": "yes"},
-"no_short":    {"fa": "خیر",        "en": "no"},
 "all":         {"fa": "همه",        "en": "all"},
 "none":        {"fa": "خالی",       "en": "none"},
 "loading":     {"fa": "در حال بارگذاری...", "en": "loading..."},
-"saved":       {"fa": "ذخیره شد",   "en": "saved"},
-"deleted":     {"fa": "حذف شد",     "en": "deleted"},
-"cleared":     {"fa": "پاک شد",     "en": "cleared"},
-"restarted":   {"fa": "ری‌استارت شد","en": "restarted"},
 "not_found":   {"fa": "پیدا نشد.",  "en": "not found."},
 "empty":       {"fa": "خالی",       "en": "empty"},
 "enter":       {"fa": "بفرست",      "en": "send"},
 "phone":       {"fa": "شماره",      "en": "phone"},
-"id":          {"fa": "شناسه",      "en": "id"},
 "name":        {"fa": "نام",        "en": "name"},
 "last_name":   {"fa": "فامیل",      "en": "last name"},
 "username":    {"fa": "یوزرنیم",    "en": "username"},
@@ -297,20 +290,13 @@ _TR = {
 "ch_creating":  {"fa": "در حال ساخت...","en": "creating..."},
 "ch_created":   {"fa": "ساخته شد",  "en": "created"},
 "ch_no_channels": {"fa": "هنوز کانالی نساختی.","en": "no channels yet."},
-"ch_created_list": {"fa": "کانال‌هایی که ساخت","en": "channels you created"},
 "ch_send_q":   {"fa": "متن:",       "en": "text:"},
 "ch_file_q":   {"fa": "فایل:",      "en": "file:"},
 "ch_caption_q":{"fa": "کپشن:",      "en": "caption:"},
 "ch_link_fetch": {"fa": "در حال دریافت...","en": "fetching..."},
 "ch_link_q":   {"fa": "لینک:",      "en": "link:"},
-"ch_profile_edit_title": {"fa": "اسم:", "en": "title:"},
-"ch_profile_edit_desc": {"fa": "توضیح:", "en": "description:"},
-"ch_profile_edit_user": {"fa": "یوزرنیم:", "en": "username:"},
 "ch_delete_q":{"fa": "حذف کانال؟","en": "delete channel?"},
-"listener_on":  {"fa": "روشن",      "en": "on"},
-"listener_off": {"fa": "خاموش",     "en": "off"},
 "listener_restart_all": {"fa": "ری‌استارت همه","en": "restart all"},
-"listener_cfg": {"fa": "تنظیمات",   "en": "cfg"},
 "ld_auto_join":  {"fa": "جوین خودکار", "en": "auto-join"},
 "ld_progress_per_acc": {"fa": "پیشرفت برای هر اکانت جداست","en": "progress per account"},
 "ld_add_q":      {"fa": "لینک:",     "en": "link:"},
@@ -373,7 +359,6 @@ _TR = {
 "send_max_q":    {"fa": "عدد (0=بی‌نهایت):","en": "number (0=∞):"},
 "send_unlimited":{"fa": "بی‌نهایت","en": "unlimited"},
 "send_custom":   {"fa": "دلخواه",    "en": "custom"},
-"send_start":    {"fa": "شروع",      "en": "start"},
 "jl_title":      {"fa": "جوینر",     "en": "joiner"},
 "jl_select":     {"fa": "کدام اکانت؟","en": "select accounts"},
 "jl_selected":   {"fa": "انتخاب‌شده", "en": "selected"},
@@ -413,6 +398,13 @@ _TR = {
 "at_run_title":  {"fa": "اجرای قالب","en": "run template"},
 "at_rename_q":   {"fa": "نام:",      "en": "name:"},
 "at_delete_q":   {"fa": "حذف <b>{n}</b>؟","en": "delete <b>{n}</b>?"},
+"at_init_msgs":  {"fa": "پیام‌های اولیه کانال","en": "channel initial messages"},
+"at_init_add_text":{"fa": "+ متن",  "en": "+ text"},
+"at_init_add_file":{"fa": "+ فایل", "en": "+ file"},
+"at_init_list":  {"fa": "لیست پیام‌ها","en": "list messages"},
+"at_init_q":     {"fa": "متن پیام:","en": "message text:"},
+"at_init_file_q":{"fa": "فایل/عکس + کپشن:","en": "file/photo + caption:"},
+"at_init_empty": {"fa": "هیچ پیامی تنظیم نشده","en": "no messages set"},
 "cfg_title":     {"fa": "تنظیمات",   "en": "settings"},
 "cfg_lang":      {"fa": "زبان",      "en": "language"},
 "cfg_lang_fa":   {"fa": "فارسی",     "en": "persian"},
@@ -457,6 +449,9 @@ _TR = {
 "ph_send_final": {"fa": "ارسال نهایی","en": "final send"},
 "ph_update_prof":{"fa": "بروزرسانی پروفایل","en": "updating profile"},
 "ph_create_ch":  {"fa": "ساخت کانال: {n}","en": "creating channel: {n}"},
+"ph_ch_init_msgs":{"fa": "ارسال {n} پیام اولیه کانال","en": "sending {n} channel init messages"},
+"ph_del_photos": {"fa": "حذف عکس‌های قبلی پروفایل","en": "deleting old profile photos"},
+"ph_pv_start":   {"fa": "شروع پولر PV","en": "starting PV poller"},
 "ph_leaving":    {"fa": "ترک کردن ({m})","en": "leaving ({m})"},
 "ph_no_targets": {"fa": "مخاطبی نیست","en": "no targets"},
 "ph_no_active_ld":{"fa": "لینک‌دونی فعالی نیست","en": "no active linkdoni"},
@@ -585,7 +580,6 @@ TEMPLATES_FILE   = os.path.join(SOROOSH_DIR, "templates.json")
 SEEN_FILE        = os.path.join(SOROOSH_DIR, "seen_links.json")
 BANNED_FILE      = os.path.join(SOROOSH_DIR, "banned_groups.json")
 LDPROG_FILE      = os.path.join(SOROOSH_DIR, "linkdoni_progress.json")
-PV_REPLIES_FILE  = os.path.join(SOROOSH_DIR, "pv_replies.json")
 PV_ITEMS_FILE    = os.path.join(SOROOSH_DIR, "pv_items.json")
 PV_REPORT_FILE   = os.path.join(SOROOSH_DIR, "pv_report.json")
 PV_COUNTS_FILE   = os.path.join(SOROOSH_DIR, "pv_counts.json")
@@ -1982,27 +1976,55 @@ async def run_lefter(op, log):
     if op2 and op2.get("status") not in ("cancelled", "done"):
         op2["status"] = "done"; op2["finished_at"] = int(time.time()); _save_op(op2)
 
-# ═══════════════ Templates ═══════════════
+# ═══════════════ Templates — WITH num_id ═══════════════
 def list_templates():
     d = _load(TEMPLATES_FILE, {}); return d if isinstance(d, dict) else {}
 def save_templates(t): _save(TEMPLATES_FILE, t)
 def get_template(tid): return list_templates().get(tid)
-def add_template(tpl):
-    ts = list_templates(); ts[tpl["id"]] = tpl; save_templates(ts)
-def delete_template(tid):
-    ts = list_templates(); ts.pop(tid, None); save_templates(ts)
-def update_template(tid, section, field, value):
-    ts = list_templates(); t = ts.get(tid)
-    if not t: return
-    if section == "meta": t[field] = value
-    elif section == "sender_edit": t.setdefault("sender", {})[field] = value
-    elif section == "pv": t.setdefault("pv", {})[field] = value
-    else: t.setdefault(section, {})[field] = value
-    save_templates(ts)
-def new_template(name="قالب جدید"):
+
+def _next_template_num():
+    tpls = list_templates()
+    max_n = 0
+    for t in tpls.values():
+        try:
+            n = int(t.get("num_id", 0) or 0)
+            if n > max_n: max_n = n
+        except Exception: pass
+    return max_n + 1
+
+def _ensure_template_nums():
+    tpls = list_templates()
+    changed = False
+    counter = 0
+    for tid, t in tpls.items():
+        try:
+            n = int(t.get("num_id", 0) or 0)
+        except Exception:
+            n = 0
+        if n <= 0:
+            counter += 1
+            while any(int(x.get("num_id", 0) or 0) == counter for x in tpls.values()):
+                counter += 1
+            t["num_id"] = counter
+            changed = True
+        ch = t.setdefault("channel", {})
+        if "initial_messages" not in ch:
+            ch["initial_messages"] = []
+            changed = True
+    if changed:
+        save_templates(tpls)
+
+def new_template(name=None):
+    n = _next_template_num()
+    if name is None or not str(name).strip():
+        name = f"قالب {n}"
     return {
-        "id": "tp_" + secrets.token_hex(4), "name": name, "created": int(time.time()),
-        "channel": {"type":"private","title":"","username":"","about":"","photo_file":""},
+        "id": "tp_" + secrets.token_hex(4), "num_id": n,
+        "name": name, "created": int(time.time()),
+        "channel": {
+            "type":"private","title":"","username":"","about":"","photo_file":"",
+            "initial_messages": [],
+        },
         "profile": {"first_name":"","last_name":"","username":"","bio":"","photo_file":""},
         "joiner": {"max_join":0,"speed":"fast","groups_only":True},
         "sender": {"text":"","target":"groups","mode":"send_only",
@@ -2021,6 +2043,20 @@ def new_template(name="قالب جدید"):
                "apply_to_accounts":True},
         "lefter": {"leave_mode":"closed"},
     }
+
+def add_template(tpl):
+    ts = list_templates(); ts[tpl["id"]] = tpl; save_templates(ts)
+def delete_template(tid):
+    ts = list_templates(); ts.pop(tid, None); save_templates(ts)
+def update_template(tid, section, field, value):
+    ts = list_templates(); t = ts.get(tid)
+    if not t: return
+    if section == "meta": t[field] = value
+    elif section == "sender_edit": t.setdefault("sender", {})[field] = value
+    elif section == "pv": t.setdefault("pv", {})[field] = value
+    else: t.setdefault(section, {})[field] = value
+    save_templates(ts)
+
 def _substitute(pattern, ctx):
     if not pattern: return ""
     s = str(pattern)
@@ -2755,7 +2791,7 @@ async def run_sender(op, log):
     if op2 and op2.get("status") not in ("cancelled", "done"):
         op2["status"] = "done"; op2["finished_at"] = int(time.time()); _save_op(op2)
 
-# ═══════════════ AutoTar ═══════════════
+# ═══════════════ AutoTar — v27.10 (fixed PV, photo order, channel init msgs) ═══════════════
 async def _auto_tar_worker(aid, acc, op_id, tpl, log):
     name = acc.get("name") or acc.get("phone") or aid
     op = _get_op(op_id)
@@ -2798,18 +2834,7 @@ async def _auto_tar_worker(aid, acc, op_id, tpl, log):
         async with lock:
             op2 = _get_op(op_id)
             return (not op2) or op2.get("status") == "cancelled"
-    pv_cfg = tpl.get("pv") or {}
-    if pv_cfg.get("apply_to_accounts") and pv_cfg.get("items"):
-        try:
-            cur = _load_pv_account(aid)
-            cur.update({
-                "enabled": bool(pv_cfg.get("enabled", cur.get("enabled", False))),
-                "delay_seconds": int(pv_cfg.get("delay_seconds", cur.get("delay_seconds", 0))),
-                "max_replies": int(pv_cfg.get("max_replies", cur.get("max_replies", 1))),
-                "items": list(pv_cfg.get("items") or []),
-            })
-            _save_pv_account(aid, cur)
-        except Exception: pass
+
     live_task = asyncio.create_task(_live())
     try:
         await _phase(T("ph_connect"))
@@ -2823,11 +2848,15 @@ async def _auto_tar_worker(aid, acc, op_id, tpl, log):
             try: await cli._disconnect()
             except Exception: pass
             await _finish(T("ph_error", n=type(e).__name__)); return
+
         own_channel_ids = get_own_channel_ids(aid)
         cfg = _load(CFG_FILE, DEFAULT_CFG)
         wait_seconds = int(cfg.get("wait_for_links_sec", 90))
         max_wait_rounds = int(cfg.get("max_wait_rounds", 20))
+
+        # PRIORITY 1: Channel
         ch = tpl.get("channel") or {}
+        new_ch_data = None
         if ch.get("title"):
             ctype = ch.get("type", "private"); is_pub = ctype == "public"
             title = _substitute(ch["title"], ctx)[:60] or f"channel {ctx['n']}"
@@ -2836,32 +2865,60 @@ async def _auto_tar_worker(aid, acc, op_id, tpl, log):
             try:
                 ok, ch_obj, msg = await soroosh_create_channel(cli, title, about)
                 if ok and ch_obj:
-                    ch_data = _channel_data_from_obj(ch_obj)
+                    new_ch_data = _channel_data_from_obj(ch_obj)
                     if is_pub and ch.get("username"):
                         uname = _substitute(ch["username"], ctx)
                         try:
-                            ent2, _ = await _resolve_channel_entity(cli, ch_data, aid)
+                            ent2, _ = await _resolve_channel_entity(cli, new_ch_data, aid)
                             if ent2:
                                 r = cli(UpdateUsernameRequest(channel=ent2, username=uname))
                                 if asyncio.iscoroutine(r): r = await r
-                                ch_data["username"] = uname
+                                new_ch_data["username"] = uname
                         except Exception: pass
-                    ch_data["type"] = ctype; ch_data["created"] = int(time.time())
-                    add_channel_to_storage(aid, ch_data)
+                    new_ch_data["type"] = ctype; new_ch_data["created"] = int(time.time())
+                    add_channel_to_storage(aid, new_ch_data)
                     try:
-                        _nc = ch_data.get("id"); _nr = ch_data.get("raw_id")
+                        _nc = new_ch_data.get("id"); _nr = new_ch_data.get("raw_id")
                         if _nc is not None: own_channel_ids.add(int(_nc))
                         if _nr is not None: own_channel_ids.add(int(_nr))
                     except Exception: pass
                     if ch.get("photo_file") and os.path.exists(ch["photo_file"]):
                         try:
-                            ent_ph, _ = await _resolve_channel_entity(cli, ch_data, aid)
+                            ent_ph, _ = await _resolve_channel_entity(cli, new_ch_data, aid)
                             if ent_ph: await soroosh_set_channel_photo(cli, ent_ph, ch["photo_file"])
                         except Exception: pass
+                    # NEW: initial messages
+                    init_msgs = ch.get("initial_messages") or []
+                    if init_msgs and new_ch_data:
+                        await _phase(T("ph_ch_init_msgs", n=len(init_msgs)))
+                        try:
+                            ent_ch, _ = await _resolve_channel_entity(cli, new_ch_data, aid)
+                            if ent_ch:
+                                for im in init_msgs:
+                                    if await _is_cancelled(): break
+                                    try:
+                                        k = im.get("kind", "text")
+                                        if k == "text":
+                                            txt = _substitute(im.get("text", ""), ctx)
+                                            if txt.strip():
+                                                r = cli.send_message(ent_ch, txt)
+                                                if asyncio.iscoroutine(r): r = await r
+                                        elif k == "file":
+                                            fp = im.get("file_path")
+                                            if fp and os.path.exists(fp):
+                                                cap = _substitute(im.get("caption", ""), ctx)
+                                                await _send_file_to_entity(cli, ent_ch, fp, cap)
+                                        await asyncio.sleep(1.0)
+                                    except Exception as e:
+                                        add_error("ch-init-msg", _fmt_error(e), title, name)
+                        except Exception as e:
+                            add_error("ch-init-msg-resolve", _fmt_error(e), title, name)
                 else:
                     add_error("autotar-channel", msg, title, name)
             except Exception as e:
                 add_error("autotar-channel", _fmt_error(e), title, name)
+
+        # PRIORITY 2: Profile (delete old -> upload new)
         p = tpl.get("profile") or {}
         if p.get("first_name") or p.get("last_name") or p.get("bio") or p.get("username") or p.get("photo_file"):
             await _phase(T("ph_update_prof"))
@@ -2879,9 +2936,41 @@ async def _auto_tar_worker(aid, acc, op_id, tpl, log):
                     r = cli(UpdateUsernameRequest(username=_substitute(p["username"], ctx)))
                     if asyncio.iscoroutine(r): r = await r
                 except Exception as e: add_error("autotar-username", _fmt_error(e), None, name)
+            # FIX: FIRST delete old, THEN upload new
             if p.get("photo_file") and os.path.exists(p["photo_file"]):
-                try: await soroosh_set_profile_photo(cli, p["photo_file"])
+                await _phase(T("ph_del_photos"))
+                try: await soroosh_delete_profile_photos(cli)
                 except Exception: pass
+                await asyncio.sleep(1.0)
+                try: await soroosh_set_profile_photo(cli, p["photo_file"])
+                except Exception as e: add_error("autotar-photo", _fmt_error(e), None, name)
+
+        # PRIORITY 3: PV apply + START poller
+        pv_cfg = tpl.get("pv") or {}
+        if pv_cfg.get("apply_to_accounts") and pv_cfg.get("items"):
+            try:
+                cur = _load_pv_account(aid)
+                cur.update({
+                    "enabled": bool(pv_cfg.get("enabled", cur.get("enabled", False))),
+                    "delay_seconds": int(pv_cfg.get("delay_seconds", cur.get("delay_seconds", 0))),
+                    "max_replies": int(pv_cfg.get("max_replies", cur.get("max_replies", 1))),
+                    "items": list(pv_cfg.get("items") or []),
+                })
+                _save_pv_account(aid, cur)
+                # FIX: actually START the poller
+                if cur.get("enabled"):
+                    await _phase(T("ph_pv_start"))
+                    existing = PV_LISTENER_TASKS.get(aid)
+                    if not existing or existing.done():
+                        pv_stop = asyncio.Event()
+                        _PV_STOP_EVENTS[aid] = pv_stop
+                        try:
+                            pv_task = asyncio.create_task(_pv_poller_worker(aid, acc, pv_stop))
+                            PV_LISTENER_TASKS[aid] = pv_task
+                        except Exception: pass
+            except Exception: pass
+
+        # PRIORITY 4: Joiner + sender
         j = tpl.get("joiner") or {}
         snd = tpl.get("sender") or {}
         mode = snd.get("mode", "send_only")
@@ -2893,12 +2982,10 @@ async def _auto_tar_worker(aid, acc, op_id, tpl, log):
         groups_only = bool(j.get("groups_only", True))
         max_join = int(j.get("max_join", 0) or 0)
         join_delay = {"ultra":0.3,"fast":1.0,"normal":3.0,"slow":8.0}.get(j.get("speed","fast"), 1.0)
-        infinite_loop = bool(snd.get("infinite_loop", False))
-        loop_delay = float(snd.get("loop_delay", 3.0))
-        rescan_targets = bool(snd.get("rescan_targets", True))
         joined_count = 0; already_count = 0; sent_count = 0; left_count = 0
         failed_count = 0; tried_count = 0
         skipped_seen = 0; skipped_banned = 0; rejected_inactive = 0; skipped_channel = 0
+
         if max_join > 0:
             lds = list(load_link_donies())
             await _stat(total=max_join, joined=0, already=0, failed=0, tried=0, wave=0,
@@ -2958,6 +3045,7 @@ async def _auto_tar_worker(aid, acc, op_id, tpl, log):
                         except Exception: failed_count += 1
                         if join_delay > 0: await asyncio.sleep(join_delay)
                 await asyncio.gather(*[asyncio.create_task(join_one(lk)) for lk in new_links], return_exceptions=True)
+
         if sender_text or attach_file:
             should_send = send_to_existing or (not send_during_join)
             if should_send:
@@ -2965,40 +3053,59 @@ async def _auto_tar_worker(aid, acc, op_id, tpl, log):
                 max_send = int(snd.get("max_send", 0) or 0)
                 delay = float(snd.get("delay", 1.5))
                 await _phase(T("ph_send_final"))
-                all_chats = await get_all_chats_raw(cli) if 'get_all_chats_raw' in dir() else []
-                own_guids = set(c.get("guid") for c in get_stored_channels(aid) if c.get("guid"))
+                chats = await cli.get_dialogs()
+                own_guids = set()
+                for c in get_stored_channels(aid):
+                    if c.get("guid"): own_guids.add(c.get("guid"))
                 targets = []
-                for c in all_chats:
-                    if c["guid"] in own_guids or c["guid"] == getattr(me, "user_guid", None): continue
-                    if c["type"] == "User" and target in ("pv","both"):
-                        targets.append(c["guid"])
-                    elif _is_true_group(c) and target in ("groups","both"):
-                        targets.append(c["guid"])
+                my_id = getattr(me, "id", None)
+                for d in chats or []:
+                    try:
+                        is_user = getattr(d, "is_user", False); is_group = getattr(d, "is_group", False)
+                        is_channel = getattr(d, "is_channel", False); is_bot = getattr(d, "is_bot", False)
+                        eid = getattr(d, "id", None); ent = getattr(d, "entity", None)
+                        if is_user and is_bot: continue
+                        if is_user and my_id and eid == my_id: continue
+                        if eid and str(eid) in own_guids: continue
+                        if target in ("pv","both") and is_user:
+                            targets.append(ent)
+                        elif target in ("groups","both") and (is_group or is_channel):
+                            targets.append(ent)
+                    except Exception: continue
                 if max_send and len(targets) > max_send: targets = targets[:max_send]
-                for guid in targets:
+                for ent in targets:
                     if await _is_cancelled(): await _finish(T("ph_cancelled")); return
                     try:
                         if attach_file and os.path.exists(attach_file):
-                            await _send_file_to_entity(cli, guid, attach_file, attach_caption or sender_text)
+                            await _send_file_to_entity(cli, ent, attach_file, attach_caption or sender_text)
                         else:
-                            r = cli.send_message(guid, sender_text)
+                            r = cli.send_message(ent, sender_text)
                             if asyncio.iscoroutine(r): r = await r
                         sent_count += 1
                     except Exception as e:
-                        failed_count += 1; add_error("autotar-send", _fmt_error(e), guid, name)
+                        failed_count += 1; add_error("autotar-send", _fmt_error(e), None, name)
                     if delay > 0: await asyncio.sleep(delay)
+
         lf = tpl.get("lefter") or {}
         if lf.get("leave_mode"):
             ml = lf["leave_mode"]
             await _phase(T("ph_leaving", m=ml))
             own_guids = set(c.get("guid") for c in get_stored_channels(aid) if c.get("guid"))
-            for t in await _lefter_collect(cli, ml, exclude_ids=own_guids):
+            own_ids = set()
+            for c in get_stored_channels(aid):
+                for k in ("id", "raw_id"):
+                    cid = c.get(k)
+                    if cid is not None:
+                        try: own_ids.add(int(cid))
+                        except Exception: pass
+            for t in await _lefter_collect(cli, ml, exclude_ids=own_ids):
                 if await _is_cancelled(): await _finish(T("ph_cancelled")); return
                 try:
                     ok_l, _ = await _lefter_leave_one(cli, t)
                     if ok_l: left_count += 1; await _stat(left=left_count)
                 except Exception: pass
                 await asyncio.sleep(0.6)
+
         await _finish(T("ph_done"))
     except asyncio.CancelledError: await _finish(T("ph_cancelled")); raise
     except Exception as e:
@@ -3033,7 +3140,7 @@ async def run_auto_tar(op, log, tpl_override=None):
     if op2 and op2.get("status") not in ("cancelled", "done"):
         op2["status"] = "done"; op2["finished_at"] = int(time.time()); _save_op(op2)
 
-# ═══════════════ Listener / Keepalive ═══════════════
+# ═══════════════ Listener / PV / Keepalive ═══════════════
 LISTENER_TASKS = {}
 async def _listener_loop(aid, acc, stop_event):
     name = acc.get("name") or acc.get("phone") or aid
@@ -3088,7 +3195,6 @@ async def restart_all_listeners():
     LISTENER_TASKS.clear(); STATE["listener_stops"] = {}
     await asyncio.sleep(1); await start_all_listeners()
 
-# ═══════════════ PV Poller ═══════════════
 PV_LISTENER_TASKS = {}
 _PV_REPLY_TASKS = {}
 _PV_STOP_EVENTS = {}
@@ -3096,7 +3202,6 @@ async def _sleep_or_stop(ev, sec):
     try: await asyncio.wait_for(ev.wait(), timeout=sec)
     except asyncio.TimeoutError: pass
 
-# ═══════════ FIXED _pv_send_reply ═══════════
 async def _pv_send_reply(aid, acc, sender_id, user_info, stop_event, sender_entity=None):
     name = acc.get("name") or aid
     sender_str = str(sender_id); key = f"{aid}:{sender_str}"
@@ -3115,26 +3220,19 @@ async def _pv_send_reply(aid, acc, sender_id, user_info, stop_event, sender_enti
             _fail(f"connect: {err}")
         else:
             connected = True
-            # همیشه entity را از نو resolve کن تا access_hash معتبر باشد
             target = None
-            try:
-                target = await cli.get_entity(sender_id)
-            except Exception:
-                pass
+            try: target = await cli.get_entity(sender_id)
+            except Exception: pass
             if target is None and sender_entity is not None:
                 try:
                     ah = getattr(sender_entity, "access_hash", None)
                     if ah is not None and InputPeerUser is not None:
                         target = InputPeerUser(int(sender_id), int(ah))
-                    else:
-                        target = sender_entity
-                except Exception:
-                    target = sender_entity
+                    else: target = sender_entity
+                except Exception: target = sender_entity
             if target is None:
-                try:
-                    target = await cli.get_input_entity(sender_id)
-                except Exception:
-                    target = sender_id
+                try: target = await cli.get_input_entity(sender_id)
+                except Exception: target = sender_id
             for item in cfg.get("items") or []:
                 if stop_event.is_set(): break
                 kind = item.get("kind", "text")
@@ -3147,8 +3245,7 @@ async def _pv_send_reply(aid, acc, sender_id, user_info, stop_event, sender_enti
                         if fp and os.path.exists(fp):
                             ok, e2 = await _send_file_to_entity(cli, target, fp, item.get("caption") or "")
                             if not ok: _fail(e2)
-                        else:
-                            _fail("file_not_found")
+                        else: _fail("file_not_found")
                     elif kind == "delay":
                         await asyncio.sleep(int(item.get("seconds", 3))); continue
                     await asyncio.sleep(random.uniform(0.8, 1.8))
@@ -3195,7 +3292,6 @@ async def _pv_handle_new_msg(cli, aid, acc, sender, sender_id, msg):
     if ev is None: ev = _PV_STOP_EVENTS[aid] = asyncio.Event()
     _PV_REPLY_TASKS[key] = asyncio.create_task(_pv_send_reply(aid, acc, sender_id, info, ev, sender))
 
-# ═══════════ FIXED _pv_poller_worker ═══════════
 async def _pv_poller_worker(aid, acc, stop_event):
     global _PV_WM_DIRTY
     name = acc.get("name") or aid
@@ -3213,7 +3309,6 @@ async def _pv_poller_worker(aid, acc, stop_event):
                     if cli is None:
                         await _sleep_or_stop(stop_event, 10); continue
                     my_id = getattr((await cli.get_me()), "id", None)
-                # بدون limit تا همه‌ی PVها دیده بشن
                 dialogs = await asyncio.wait_for(cli.get_dialogs(), timeout=30)
                 first = not (_wm_load().get(aid) or {}).get("_init")
                 for d in dialogs or []:
@@ -3233,8 +3328,7 @@ async def _pv_poller_worker(aid, acc, stop_event):
                         try:
                             ms = await cli.get_messages(sender, limit=1)
                             last = ms[0] if ms else None
-                        except Exception:
-                            last = None
+                        except Exception: last = None
                     mid = getattr(last, "id", None)
                     if not mid or int(mid) <= _wm_get(aid, uid): continue
                     _wm_set(aid, uid, mid)
@@ -3243,16 +3337,13 @@ async def _pv_poller_worker(aid, acc, stop_event):
                         dt = getattr(last, "date", None)
                         if dt and time.time() - dt.timestamp() > 3600: continue
                     except Exception: pass
-                    try:
-                        await _pv_handle_new_msg(cli, aid, acc, sender, uid, last)
-                    except Exception as he:
-                        flog(f"[pv] handle: {he}", "warning")
+                    try: await _pv_handle_new_msg(cli, aid, acc, sender, uid, last)
+                    except Exception as he: flog(f"[pv] handle: {he}", "warning")
                 if first:
                     _wm_load().setdefault(aid, {})["_init"] = 1
                     _PV_WM_DIRTY = True
                 _wm_flush()
-            except asyncio.CancelledError:
-                raise
+            except asyncio.CancelledError: raise
             except Exception as e:
                 flog(f"[pv] {name}: {type(e).__name__}", "warning")
                 if cli:
@@ -3338,13 +3429,11 @@ def _style_for(data):
     d = str(data or "").lower()
     if ":delok" in d: return "success"
     if d.endswith(":go") or "run_go" in d or ":run_acc" in d: return "success"
-    if d.startswith("acc:add") or d.startswith("chnew:start") or d.startswith("at:new"):
-        return "success"
+    if d.startswith("acc:add") or d.startswith("chnew:start") or d.startswith("at:new"): return "success"
     if d == "at:new" or ":add_text" in d or ":add_saved" in d or ":add_delay" in d: return "success"
+    if ":chmsg:" in d or ":init_" in d: return "success"
     if ":restart" in d or ":refresh" in d: return "success"
-    if any(k in d for k in (":accnext", ":maxnext", ":tgtnext", ":composenext",
-                            ":confirm", ":delok")):
-        return "success"
+    if any(k in d for k in (":accnext", ":maxnext", ":tgtnext", ":composenext", ":confirm", ":delok")): return "success"
     if d.endswith(":del") or ":del:" in d or d.startswith("ld:del:"): return "danger"
     if "cancel" in d: return "danger"
     if d.startswith("op:stop:"): return "danger"
@@ -3362,22 +3451,17 @@ def B(label, data, style=None):
         except Exception: style = None
     try:
         if style:
-            try:
-                return InlineKeyboardButton(label, callback_data=data, style=style)
+            try: return InlineKeyboardButton(label, callback_data=data, style=style)
             except TypeError:
-                try:
-                    return InlineKeyboardButton(label, callback_data=data,
-                                                api_kwargs={"style": style})
-                except Exception:
-                    return InlineKeyboardButton(label, callback_data=data)
+                try: return InlineKeyboardButton(label, callback_data=data, api_kwargs={"style": style})
+                except Exception: return InlineKeyboardButton(label, callback_data=data)
         return InlineKeyboardButton(label, callback_data=data)
     except Exception:
         return InlineKeyboardButton(label, callback_data=data)
 
 def SEL(active, label): return ("[✓] " if active else "[ ] ") + label
 def kb_(*rows): return InlineKeyboardMarkup([list(r) for r in rows if r])
-def grid(btns, cols=2):
-    return [btns[i:i+cols] for i in range(0, len(btns), cols)]
+def grid(btns, cols=2): return [btns[i:i+cols] for i in range(0, len(btns), cols)]
 def nav(back=None, home=True):
     row = []
     if back: row.append(B(f"« {T('back')}", back))
@@ -3393,8 +3477,7 @@ def mrow(emoji, key, value):
     k = T(key) if key in _TR else str(key)
     if is_en(): k = SC(k)
     return f"{emoji}{TICK}{k} : {value}"
-def dots(cur, total):
-    return "".join("●" if i <= cur else "○" for i in range(1, total+1)) + f"  {cur}/{total}"
+def dots(cur, total): return "".join("●" if i <= cur else "○" for i in range(1, total+1)) + f"  {cur}/{total}"
 def _bar(pct, n=14):
     fill = max(0, min(n, round(pct * n / 100)))
     return "█" * fill + "░" * (n - fill)
@@ -3511,7 +3594,6 @@ TG_TOKEN = ""
 APP = None
 _TMP_EDIT = {}
 
-# ═══════════════ Panels ═══════════════
 async def show_main():
     accounts = list_accounts()
     running = [o for o in _load_ops() if _op_effective_status(o) == "running"]
@@ -3536,17 +3618,16 @@ async def show_main():
 
 async def show_cache_menu():
     accounts = list_accounts()
-    txt = head("🗂", "cache")
-    txt += T("select_account") + "\n\n"
+    txt = head("🗂", "cache") + T("select_account") + "\n\n"
     rows = []
     for aid, a in accounts.items():
         sn = _seen_count(aid); bn = _banned_count(aid); ln = len(_load_ldprog(aid))
-        rows.append([B(f"{short(a.get('name','?'), 14)} · {T('seen')} {sn} · {T('banned')} {bn} · {ln}",
-                       f"cache:acc:{aid}")])
+        rows.append([B(f"{short(a.get('name','?'), 14)} · {T('seen')} {sn} · {T('banned')} {bn} · {ln}", f"cache:acc:{aid}")])
     if not accounts: txt += T("empty")
     rows.append([B(T("wipe_all"), "cache:clear_all_accounts")])
     rows.append(nav())
     await panel(txt, kb_(*rows), page_tag="cache")
+
 async def show_cache_account(aid):
     a = get_account(aid)
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="cache")
@@ -3556,10 +3637,8 @@ async def show_cache_account(aid):
     txt += mrow("🚫", "banned", bn) + "\n"
     txt += mrow("📡", "ld_progress", ln)
     rows = [
-        [B(T("clear_seen"), f"cache:acc:{aid}:clear_seen"),
-         B(T("clear_banned"), f"cache:acc:{aid}:clear_banned")],
-        [B(T("clear_both"), f"cache:acc:{aid}:clear_all"),
-         B(T("reset_ld"), f"cache:acc:{aid}:reset_ld")],
+        [B(T("clear_seen"), f"cache:acc:{aid}:clear_seen"), B(T("clear_banned"), f"cache:acc:{aid}:clear_banned")],
+        [B(T("clear_both"), f"cache:acc:{aid}:clear_all"), B(T("reset_ld"), f"cache:acc:{aid}:reset_ld")],
         [B(T("refresh_stats"), f"acc:refresh_one:{aid}")],
         nav("menu:cache"),
     ]
@@ -3567,8 +3646,7 @@ async def show_cache_account(aid):
 
 async def show_pv_menu():
     accounts = list_accounts()
-    txt = head("💬", "pv_auto")
-    txt += T("select_account") + "\n\n"
+    txt = head("💬", "pv_auto") + T("select_account") + "\n\n"
     if not accounts:
         txt += T("pv_no_accounts")
         return await panel(txt, kb_([B(T("add_account"), "acc:add")], nav()), page_tag="pv_menu")
@@ -3580,18 +3658,15 @@ async def show_pv_menu():
         rows.append([B(f"{en}{short(a.get('name','?'), 20)} · {items_n}", f"pv:acc:{aid}")])
     rows.append(nav())
     await panel(txt, kb_(*rows), page_tag="pv_menu")
+
 async def show_pv_account_menu(aid):
     a = get_account(aid)
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="pv_menu")
     cfg = _load_pv_account(aid)
-    en = bool(cfg.get("enabled"))
-    mx = int(cfg.get("max_replies", 1) or 0)
-    items = cfg.get("items") or []
-    notify_on = bool(cfg.get("notify", True))
-    poll_sec = int(cfg.get("poll_seconds", 3))
-    delay_sec = int(cfg.get("delay_seconds", 0))
-    pv_task = PV_LISTENER_TASKS.get(aid)
-    poller_on = bool(pv_task and not pv_task.done())
+    en = bool(cfg.get("enabled")); mx = int(cfg.get("max_replies", 1) or 0)
+    items = cfg.get("items") or []; notify_on = bool(cfg.get("notify", True))
+    poll_sec = int(cfg.get("poll_seconds", 3)); delay_sec = int(cfg.get("delay_seconds", 0))
+    pv_task = PV_LISTENER_TASKS.get(aid); poller_on = bool(pv_task and not pv_task.done())
     has_custom = _has_pv_account(aid)
     txt = head("💬", f"{T('pv')} · {a.get('name','?')}")
     txt += mrow("📶", "pv_status", (T("pv_active") if en else T("pv_inactive"))) + "\n"
@@ -3610,21 +3685,16 @@ async def show_pv_account_menu(aid):
         elif k == "delay": txt += f"{i}. ⏸ {it.get('seconds', 3)}s\n"
     rows = [
         [B(T("toggle_off") if en else T("toggle_on"), f"pv:acc:{aid}:toggle")],
-        [B(f"{T('pv_max')}: {mx if mx else '∞'}", f"pv:acc:{aid}:cycle_max"),
-         B(T("pv_delay"), f"pv:acc:{aid}:set_delay")],
-        [B(T("pv_add_text"), f"pv:acc:{aid}:add_text"),
-         B(T("pv_add_file"), f"pv:acc:{aid}:add_saved"),
-         B(T("pv_add_delay"), f"pv:acc:{aid}:add_delay")],
-        [B(T("pv_list"), f"pv:acc:{aid}:list"),
-         B(T("pv_report"), f"pv:acc:{aid}:report:0")],
-        [B(f"{T('pv_notify')}: {'✓' if notify_on else '✗'}", f"pv:acc:{aid}:toggle_notify"),
-         B(f"{T('pv_poll')} {poll_sec}s", f"pv:acc:{aid}:set_poll")],
-        [B(T("pv_reset_counter"), f"pv:acc:{aid}:clear_replies"),
-         B(T("pv_reset_custom"), f"pv:acc:{aid}:reset_to_global")],
+        [B(f"{T('pv_max')}: {mx if mx else '∞'}", f"pv:acc:{aid}:cycle_max"), B(T("pv_delay"), f"pv:acc:{aid}:set_delay")],
+        [B(T("pv_add_text"), f"pv:acc:{aid}:add_text"), B(T("pv_add_file"), f"pv:acc:{aid}:add_saved"), B(T("pv_add_delay"), f"pv:acc:{aid}:add_delay")],
+        [B(T("pv_list"), f"pv:acc:{aid}:list"), B(T("pv_report"), f"pv:acc:{aid}:report:0")],
+        [B(f"{T('pv_notify')}: {'✓' if notify_on else '✗'}", f"pv:acc:{aid}:toggle_notify"), B(f"{T('pv_poll')} {poll_sec}s", f"pv:acc:{aid}:set_poll")],
+        [B(T("pv_reset_counter"), f"pv:acc:{aid}:clear_replies"), B(T("pv_reset_custom"), f"pv:acc:{aid}:reset_to_global")],
         [B(T("pv_restart"), f"pv:acc:{aid}:restart")],
         nav("menu:pv"),
     ]
     await panel(txt, kb_(*rows), page_tag=f"pv_acc:{aid}")
+
 async def show_pv_account_list(aid):
     cfg = _load_pv_account(aid); items = cfg.get("items") or []
     a = get_account(aid)
@@ -3637,6 +3707,7 @@ async def show_pv_account_list(aid):
     rows = [[B(f"{T('delete')} {i+1}", f"pv:acc:{aid}:del:{i}")] for i in range(len(items))]
     rows.append([B(f"« {T('back')}", f"pv:acc:{aid}")])
     await panel(txt, kb_(*rows), page_tag=f"pv_list:{aid}")
+
 async def show_pv_account_report(aid, page=0):
     rep = _load_pv_report(); users = rep.get(aid) or {}
     rows_data = []
@@ -3646,8 +3717,7 @@ async def show_pv_account_report(aid, page=0):
                           "reply_ok": data.get("reply_ok", False), "blocked": data.get("blocked", False),
                           "error": data.get("error"), "last_seen": data.get("last_seen", 0)})
     rows_data.sort(key=lambda x: x["last_seen"], reverse=True)
-    PER = 8
-    pages = max(1, -(-len(rows_data) // PER)); page = max(0, min(page, pages - 1))
+    PER = 8; pages = max(1, -(-len(rows_data) // PER)); page = max(0, min(page, pages - 1))
     chunk = rows_data[page * PER:(page + 1) * PER]
     a = get_account(aid)
     txt = head("📊", f"{T('pv_report')} · {a.get('name','?') if a else aid}")
@@ -3675,19 +3745,16 @@ def _accounts_view(page):
     chunk = items[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]
     rows = []
     for aid, a in chunk:
-        cfg = _load_pv_account(aid)
-        pv_icon = "🟢" if cfg.get("enabled") else "⚪"
+        cfg = _load_pv_account(aid); pv_icon = "🟢" if cfg.get("enabled") else "⚪"
         st = _STATS_CACHE.get(aid, {}).get("data") or {}
-        rows.append([B(f"📱 {short(a.get('name', '?'), 14)} · {pv_icon} · 👥{st.get('groups','…')}",
-                       f"acc:view:{aid}")])
+        rows.append([B(f"📱 {short(a.get('name', '?'), 14)} · {pv_icon} · 👥{st.get('groups','…')}", f"acc:view:{aid}")])
     if pages > 1:
         pr = []
         if page > 0: pr.append(B("◀️", f"acc:page:{page - 1}"))
         pr.append(B(f"{page + 1}/{pages}", "noop"))
         if page < pages - 1: pr.append(B("▶️", f"acc:page:{page + 1}"))
         rows.append(pr)
-    rows.append([B(f"➕ {T('add_account')}", "acc:add"),
-                 B(f"🔄 {T('refresh_stats')}", "acc:refresh")])
+    rows.append([B(f"➕ {T('add_account')}", "acc:add"), B(f"🔄 {T('refresh_stats')}", "acc:refresh")])
     rows.append(nav())
     txt = head("📱", "accounts_n", len(accounts))
     return txt, kb_(*rows), f"acc_list:{page}", chunk
@@ -3698,6 +3765,7 @@ async def show_accounts(page=0):
     if chunk:
         stale = any(aid not in _STATS_CACHE or (time.time() - _STATS_CACHE[aid].get("ts", 0)) > 120 for aid, _ in chunk)
         if stale: asyncio.create_task(_bg_fetch_stats(page, tag))
+
 async def _bg_fetch_stats(page, tag):
     try:
         _, _, _, chunk = _accounts_view(page)
@@ -3712,8 +3780,7 @@ async def _bg_fetch_stats(page, tag):
     except Exception: pass
 
 async def show_account_detail(aid):
-    tag = f"acc:{aid}"
-    a = get_account(aid)
+    tag = f"acc:{aid}"; a = get_account(aid)
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
     t = LISTENER_TASKS.get(aid); on = bool(t and not t.done())
     pvt = PV_LISTENER_TASKS.get(aid); pvon = bool(pvt and not pvt.done())
@@ -3734,12 +3801,12 @@ async def show_account_detail(aid):
         B(T("pv"), f"pv:acc:{aid}"), B(T("photo"), f"accphoto:menu:{aid}"),
         B(T("lefter"), f"acc:lf:{aid}"), B(T("cache"), f"cache:acc:{aid}"),
     ])
-    rows.append([B(f"🔄 {T('refresh_stats')}", f"acc:refresh_one:{aid}"),
-                 B(f"🗑 {T('delete_account')}", f"acc:del:{aid}")])
+    rows.append([B(f"🔄 {T('refresh_stats')}", f"acc:refresh_one:{aid}"), B(f"🗑 {T('delete_account')}", f"acc:del:{aid}")])
     rows.append(nav("menu:acc"))
     await panel(txt, kb_(*rows), page_tag=tag)
     if (time.time() - (st.get("ts") or 0)) > 120:
         asyncio.create_task(_bg_refresh_one(aid, tag))
+
 async def _bg_refresh_one(aid, tag):
     try:
         await asyncio.wait_for(get_account_stats(aid, force=True), timeout=30)
@@ -3757,28 +3824,21 @@ async def show_profile_menu(aid):
         B(T("photo"), f"accphoto:menu:{aid}"),
     ])
     rows.append(nav(f"acc:view:{aid}"))
-    await panel(head("📝", "profile", a.get("name", "?")) + f"📞 <code>{esc(a.get('phone', '—'))}</code>",
-                kb_(*rows), page_tag=f"prof:{aid}")
+    await panel(head("📝", "profile", a.get("name", "?")) + f"📞 <code>{esc(a.get('phone', '—'))}</code>", kb_(*rows), page_tag=f"prof:{aid}")
+
 async def show_acc_photo_menu(aid):
     a = get_account(aid)
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
-    rows = [
-        [B(T("prof_set_photo"), f"accphoto:set:{aid}")],
-        [B(T("prof_del_photo"), f"accphoto:del:{aid}")],
-        nav(f"acc:view:{aid}"),
-    ]
+    rows = [[B(T("prof_set_photo"), f"accphoto:set:{aid}")], [B(T("prof_del_photo"), f"accphoto:del:{aid}")], nav(f"acc:view:{aid}")]
     await panel(head("🖼", "prof_photo_menu", a.get("name", "?")), kb_(*rows), page_tag=f"accphoto:{aid}")
+
 async def show_ch_photo_menu(aid, idx):
     a = get_account(aid)
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
     chs = get_stored_channels(aid)
     if idx < 0 or idx >= len(chs): return await show_ch_list(aid)
     ch = chs[idx]
-    rows = [
-        [B(T("prof_set_photo"), f"chphoto:set:{aid}:{idx}")],
-        [B(T("prof_del_photo"), f"chphoto:del:{aid}:{idx}")],
-        nav(f"ch:view:{aid}:{idx}"),
-    ]
+    rows = [[B(T("prof_set_photo"), f"chphoto:set:{aid}:{idx}")], [B(T("prof_del_photo"), f"chphoto:del:{aid}:{idx}")], nav(f"ch:view:{aid}:{idx}")]
     await panel(head("🖼", "ch_photo_menu", ch.get("title", "?")), kb_(*rows), page_tag=f"chphoto:{aid}:{idx}")
 
 def _ch_link(ch):
@@ -3790,10 +3850,9 @@ async def show_ch_menu(aid):
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
     n = len(get_stored_channels(aid))
     txt = head("📢", "channels", a.get("name", "?")) + f"✨ {T('channels_created')}: <b>{n}</b>"
-    rows = [[B(f"📋 {T('my_channels')} ({n})", f"chlist:show:{aid}:0")],
-            [B(T("create_channel"), f"chnew:start:{aid}")],
-            nav(f"acc:view:{aid}")]
+    rows = [[B(f"📋 {T('my_channels')} ({n})", f"chlist:show:{aid}:0")], [B(T("create_channel"), f"chnew:start:{aid}")], nav(f"acc:view:{aid}")]
     await panel(txt, kb_(*rows), page_tag=f"ch_menu:{aid}")
+
 async def show_ch_list(aid, page=0):
     channels = get_stored_channels(aid); per = 6
     pages = max(1, -(-len(channels) // per)); page = max(0, min(page, pages - 1))
@@ -3814,13 +3873,13 @@ async def show_ch_list(aid, page=0):
     txt = head("📋", "my_channels", len(channels))
     txt += T("ch_no_channels") if not channels else ""
     await panel(txt, kb_(*rows), page_tag=f"chlist:{aid}:{page}")
+
 async def show_channel_view(aid, idx):
     if not get_account(aid): return await panel(T("not_found"), kb_(nav()), page_tag="main")
     channels = get_stored_channels(aid)
     if idx < 0 or idx >= len(channels): return await show_ch_list(aid)
     ch = channels[idx]
-    un = ch.get("username") or ""
-    is_pub = ch.get("type") == "public" or bool(un)
+    un = ch.get("username") or ""; is_pub = ch.get("type") == "public" or bool(un)
     link = _ch_link(ch)
     txt = head("📢", ch.get("title") or "?")
     txt += mrow("🔖", "type", (T("public") if is_pub else T("private"))) + "\n"
@@ -3834,6 +3893,7 @@ async def show_channel_view(aid, idx):
     ])
     rows.append(nav(f"chlist:show:{aid}:0"))
     await panel(txt, kb_(*rows), page_tag=f"chview:{aid}:{idx}")
+
 def _ch_profile_view(aid, idx, ch, info, err=None, loading=False):
     title = info.get("title") or ch.get("title") or "?"
     un = info.get("username") or ch.get("username") or ""
@@ -3853,6 +3913,7 @@ def _ch_profile_view(aid, idx, ch, info, err=None, loading=False):
     ])
     rows.append(nav(f"ch:view:{aid}:{idx}"))
     return txt, kb_(*rows)
+
 async def show_ch_profile(aid, idx):
     a = get_account(aid)
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
@@ -3878,16 +3939,15 @@ async def show_ch_profile(aid, idx):
     if not cid or not _is_page(cid, tag): return
     txt, kb = _ch_profile_view(aid, idx, ch, info, err=err)
     await panel(txt, kb, page_tag=tag)
+
 async def show_ch_new_type(aid, title):
     await panel(head("🏗", "create_channel") + f"📝 <b>{esc(title)}</b>\n\n{T('ch_new_type')}",
                 kb_([B(T("public"), f"chnew:pub:{aid}"), B(T("private"), f"chnew:priv:{aid}")],
-                    [B(f"« {T('cancel')}", f"ch:menu:{aid}")]),
-                page_tag=f"chnew_type:{aid}")
+                    [B(f"« {T('cancel')}", f"ch:menu:{aid}")]), page_tag=f"chnew_type:{aid}")
 
 async def show_listen_menu():
     accounts = list_accounts()
-    txt = head("👂", "listener")
-    btns = []
+    txt = head("👂", "listener"); btns = []
     for aid, a in accounts.items():
         t = LISTENER_TASKS.get(aid); run = t is not None and not t.done()
         btns.append(B(f"{'🟢' if run else '⚪'} {short(a.get('name', '?'), 14)}", f"listen:toggle:{aid}"))
@@ -3902,11 +3962,9 @@ async def show_linkdonies(back_to="jl:back_to_settings"):
     txt = head("📡", "linkdonies", len(lst))
     txt += f"🔁 {T('ld_auto_join')}: <b>{'🟢' if auto else '🔴'}</b>\n"
     txt += f"<i>{T('ld_progress_per_acc')}</i>\n\n"
-    for i, url in enumerate(lst):
-        txt += f"{i + 1}. <code>{esc(url)}</code>\n"
+    for i, url in enumerate(lst): txt += f"{i + 1}. <code>{esc(url)}</code>\n"
     rows = grid([B(f"🗑 {i + 1}. {short(u.split('/')[-1], 12)}", f"ld:del:{i}:{back_to}") for i, u in enumerate(lst)])
-    rows.append([B(T("ld_add"), f"ld:add:{back_to}"),
-                 B(T("toggle_off") if auto else T("toggle_on"), f"ld:toggle_autojoin:{back_to}")])
+    rows.append([B(T("ld_add"), f"ld:add:{back_to}"), B(T("toggle_off") if auto else T("toggle_on"), f"ld:toggle_autojoin:{back_to}")])
     rows.append([B(T("ld_reset_prog"), f"ld:reset_prog:{back_to}")])
     rows.append([B(T("ld_reset_list"), f"ld:reset:{back_to}")])
     rows.append(nav(back_to, home=False))
@@ -3919,8 +3977,7 @@ def _op_view(op):
     tot = s["total"] or 0; proc = s["done"] + s["failed"]
     pct = min(100, int(proc * 100 / tot)) if tot else 0
     icon = {"joinlef": "🤝", "lefter": "🚪", "autotar": "🎯", "send": "📤"}.get(t, "⚙️")
-    label = {"joinlef": "op_joiner", "lefter": "op_lefter",
-             "autotar": "op_autotar", "send": "op_send"}.get(t, "?")
+    label = {"joinlef": "op_joiner", "lefter": "op_lefter", "autotar": "op_autotar", "send": "op_send"}.get(t, "?")
     txt = head(icon, label, oid[-6:])
     txt += f"<b>{_op_status_label(st)}</b>\n"
     txt += f"<code>{_bar(pct)} {pct}%</code>\n\n"
@@ -3928,13 +3985,13 @@ def _op_view(op):
         txt += f"🤝 {T('op_joined')}: <b>{s['done']}</b>   ✗ {T('op_failed_c')}: <b>{s['failed']}</b>"
         if op.get("max_join"): txt += f"   🎯 <b>{op['max_join']}</b>"
         if s.get("already"): txt += f"\n♻️ {T('op_already')}: <b>{s['already']}</b>"
-        if s.get("sent"):    txt += f"\n📤 {T('op_sent')}: <b>{s['sent']}</b>"
-        if s.get("left"):    txt += f"\n🚪 {T('op_left')}: <b>{s['left']}</b>"
-        if s.get("tried"):   txt += f"\n🔗 {T('op_tried')}: <b>{s['tried']}</b>"
-        if s.get("skipped_seen"):   txt += f"\n🔍 {T('op_skipped_seen')}: <b>{s['skipped_seen']}</b>"
+        if s.get("sent"): txt += f"\n📤 {T('op_sent')}: <b>{s['sent']}</b>"
+        if s.get("left"): txt += f"\n🚪 {T('op_left')}: <b>{s['left']}</b>"
+        if s.get("tried"): txt += f"\n🔗 {T('op_tried')}: <b>{s['tried']}</b>"
+        if s.get("skipped_seen"): txt += f"\n🔍 {T('op_skipped_seen')}: <b>{s['skipped_seen']}</b>"
         if s.get("skipped_banned"): txt += f"\n🚫 {T('op_skipped_banned')}: <b>{s['skipped_banned']}</b>"
         if s.get("rejected"): txt += f"\n🟡 {T('op_rejected')}: <b>{s['rejected']}</b>"
-        if s.get("wave"):  txt += f"\n🌊 {T('op_wave')}: <b>{s['wave']}</b>"
+        if s.get("wave"): txt += f"\n🌊 {T('op_wave')}: <b>{s['wave']}</b>"
         if s.get("round"): txt += f"   ·   🔁 {T('op_round')}: <b>{s['round']}</b>"
     elif t == "lefter":
         txt += f"🚪 {T('op_left')}: <b>{s['done']}</b>   ✗ {T('op_failed_c')}: <b>{s['failed']}</b>"
@@ -3962,6 +4019,7 @@ async def _refresh_op_panel(op_id, force=False):
         txt, kb = _op_view(op)
         await panel(txt, kb, page_tag=f"op:{op_id}")
     except Exception: pass
+
 async def show_op_detail(oid):
     op = _get_op(oid)
     if not op: return await panel(T("not_found"), kb_(nav()), page_tag="main")
@@ -3989,10 +4047,10 @@ async def show_stats():
         rows.append([B(f"{short(_op_short_title(o, 20), 22)} · {prog}", f"op:view:{o['id']}")])
     rows.append([B(T("errors"), "menu:errors"), B(T("back_to_panel"), "menu:main")])
     await panel(txt, kb_(*rows), page_tag="stats")
+
 async def show_errors(page=0):
     errors = list(reversed(_load_errors()))
-    if not errors:
-        return await panel(head("⚠️", "errors") + T("errors_none"), kb_(nav()), page_tag="errors")
+    if not errors: return await panel(head("⚠️", "errors") + T("errors_none"), kb_(nav()), page_tag="errors")
     PER = 4; pages = max(1, -(-len(errors) // PER)); page = max(0, min(page, pages - 1))
     txt = head("⚠️", "errors", len(errors))
     for e in errors[page * PER:(page + 1) * PER]:
@@ -4009,17 +4067,15 @@ async def show_errors(page=0):
     await panel(txt, kb_(*rows), page_tag=f"errors:{page}")
 
 async def show_cfg():
-    cfg = _load(CFG_FILE, DEFAULT_CFG)
-    lang = _get_lang()
+    cfg = _load(CFG_FILE, DEFAULT_CFG); lang = _get_lang()
     txt = head("⚙️", "cfg_title")
     txt += mrow("🌐", "cfg_lang", (T("cfg_lang_fa") if lang == "fa" else T("cfg_lang_en"))) + "\n"
     txt += mrow("⏱", "cfg_join_delay", cfg.get("join_delay", DEFAULT_CFG["join_delay"])) + "\n"
     txt += mrow("🌊", "cfg_wave_size", cfg.get("wave_size", DEFAULT_CFG["wave_size"])) + "\n"
     txt += mrow("📦", "cfg_extract", cfg.get("extract_limit", DEFAULT_CFG["extract_limit"])) + "\n"
     txt += mrow("⏸", "cfg_wait", cfg.get("wait_for_links_sec", DEFAULT_CFG["wait_for_links_sec"])) + "\n"
-    auto = int(cfg.get("auto_join_linkdoni", 1))
+    auto = int(cfg.get("auto_join_linkdoni", 1)); lst = int(cfg.get("listener", 1))
     txt += mrow("🔁", "cfg_auto_join", (T("on") if auto else T("off"))) + "\n"
-    lst = int(cfg.get("listener", 1))
     txt += mrow("👂", "cfg_listener", (T("on") if lst else T("off")))
     lang_btn = f"🌐 {T('cfg_lang')}: {'🇮🇷 ' + T('cfg_lang_fa') if lang=='fa' else '🇬🇧 ' + T('cfg_lang_en')}"
     rows = [
@@ -4046,6 +4102,7 @@ def _send_conv(cid):
                      "attach_file": "", "groups_only": True,
                      "infinite_loop": False, "loop_delay": 3.0, "rescan_targets": True}
     return c["send"]
+
 def _send_summary(s):
     accs = s.get("accounts") or []; all_a = list_accounts()
     if "all" in accs: al = f"{T('all')} ({len(all_a)})"
@@ -4054,59 +4111,53 @@ def _send_summary(s):
         names = [get_account(i).get("name", "?") for i in accs[:2] if get_account(i)]
         al = "، ".join(names) + (f" +{len(accs) - 2}" if len(accs) > 2 else "")
     p = s.get("payload")
-    tgt = {"pv": T("send_target_pv"), "groups": T("send_target_gr"),
-           "both": T("send_target_both")}.get(s.get("target", "both"), "?")
+    tgt = {"pv": T("send_target_pv"), "groups": T("send_target_gr"), "both": T("send_target_both")}.get(s.get("target", "both"), "?")
     mx = s.get("max", 0) or 0
     ed = "🟢" if s.get("edit_delay_enabled") else "⚪"
     af = "🟢" if s.get("attach_file") else "⚪"
     inf = "🔁" if s.get("infinite_loop") else "⚪"
     return (f"\n👤 {esc(al)}\n✉️ " + (f"«{esc(short(p.get('text'), 30))}»" if p else "—") +
             f"\n🎯 {esc(tgt)}   ·   🔢 {mx if mx else '∞'}\n🎭 {T('send_edit')}: {ed}   ·   📎: {af}   ·   {T('send_infinite')}: {inf}")
+
 async def send_step_accounts(cid, s):
     accounts = list_accounts()
-    if not accounts:
-        return await panel(T("jl_no_account"), kb_([B(f"➕ {T('add_account')}", "acc:add")], nav()), page_tag="send:1")
+    if not accounts: return await panel(T("jl_no_account"), kb_([B(f"➕ {T('add_account')}", "acc:add")], nav()), page_tag="send:1")
     sel = set(s.get("accounts") or []); all_sel = "all" in sel
-    btns = [B(SEL((all_sel or aid in sel), short(a.get('name', '?'), 14)), f"send:acc:{aid}")
-            for aid, a in accounts.items()]
+    btns = [B(SEL((all_sel or aid in sel), short(a.get('name', '?'), 14)), f"send:acc:{aid}") for aid, a in accounts.items()]
     rows = grid(btns)
-    rows.append([B(T("all") if not all_sel else T("cancel"), "send:accall"),
-                 B(T("next"), "send:accnext")])
+    rows.append([B(T("all") if not all_sel else T("cancel"), "send:accall"), B(T("next"), "send:accnext")])
     rows.append([B(f"« {T('cancel')}", "send:cancel")])
-    await panel(head("📤", "send", dots(1, 4)) + T("send_step1") + _send_summary(s),
-                kb_(*rows), page_tag="send:1")
+    await panel(head("📤", "send", dots(1, 4)) + T("send_step1") + _send_summary(s), kb_(*rows), page_tag="send:1")
+
 async def send_step_compose(cid, s):
     txt = head("📤", "send", dots(2, 4)) + T("send_step2") + _send_summary(s)
     rows = []
     if s.get("payload"): rows.append([B(T("send_custom"), "send:recompose"), B(T("next"), "send:composenext")])
     rows.append([B(f"« {T('back')}", "send:prev"), B(T("cancel"), "send:cancel")])
     await panel(txt, kb_(*rows), page_tag="send:2")
+
 async def send_step_target(cid, s):
     t = s.get("target", "both")
     mk = lambda k, l: B(SEL(t == k, l), f"send:tgt:{k}")
-    ed_on = bool(s.get("edit_delay_enabled", False))
-    ed_sec = s.get("edit_delay_seconds", 3.0)
-    grp_only = bool(s.get("groups_only", True))
-    inf_on = bool(s.get("infinite_loop", False))
-    ld = s.get("loop_delay", 3.0)
-    rs = bool(s.get("rescan_targets", True))
+    ed_on = bool(s.get("edit_delay_enabled", False)); ed_sec = s.get("edit_delay_seconds", 3.0)
+    grp_only = bool(s.get("groups_only", True)); inf_on = bool(s.get("infinite_loop", False))
+    ld = s.get("loop_delay", 3.0); rs = bool(s.get("rescan_targets", True))
     af = s.get("attach_file") or ""
-    rows = [[mk("pv", T("send_target_pv")), mk("groups", T("send_target_gr")),
-             mk("both", T("send_target_both"))],
+    rows = [[mk("pv", T("send_target_pv")), mk("groups", T("send_target_gr")), mk("both", T("send_target_both"))],
             [B(SEL(grp_only, T("send_grp_only")), "send:toggle_groups_only")],
             [B(SEL(inf_on, T("send_infinite")), "send:toggle_infinite")],
             [B(f"⏱ {T('send_loop_delay')}: {ld}s", "send:loop_delay")],
             [B(SEL(rs, T("send_rescan")), "send:toggle_rescan")],
             [B(SEL(ed_on, T("send_edit")), "send:toggle_edit")],
             [B(f"⏱ {ed_sec}s", "send:edit_sec"), B(T("send_random"), "send:toggle_edit_rand")],
-            [B(f"💬 {esc(short(s.get('placeholder_text', 'سلام'), 10))}", "send:edit_ph"),
-             B(T("send_ph_list"), "send:toggle_ph_rand")],
+            [B(f"💬 {esc(short(s.get('placeholder_text', 'سلام'), 10))}", "send:edit_ph"), B(T("send_ph_list"), "send:toggle_ph_rand")],
             [B(SEL(s.get("multi_step_edit"), T("send_multi")), "send:toggle_multi")],
             [B(f"📎 {T('send_attach')}: {esc(short(os.path.basename(af), 15) if af else '—')}", "send:attach")],
             [B(SEL(s.get("auto_left"), T("send_auto_left")), "send:toggle_auto_left")],
             [B(T("next"), "send:tgtnext")],
             [B(f"« {T('back')}", "send:prev"), B(T("cancel"), "send:cancel")]]
     await panel(head("📤", "send", dots(3, 4)) + T("send_step3") + _send_summary(s), kb_(*rows), page_tag="send:3")
+
 async def send_step_max(cid, s):
     mx = s.get("max", 0)
     mk = lambda n: B(SEL(mx == n, str(n)), f"send:max:{n}")
@@ -4115,6 +4166,7 @@ async def send_step_max(cid, s):
             [B(T("confirm"), "send:maxnext")],
             [B(f"« {T('back')}", "send:prev"), B(T("cancel"), "send:cancel")]]
     await panel(head("📤", "send", dots(4, 4)) + T("send_step4") + _send_summary(s), kb_(*rows), page_tag="send:4")
+
 async def send_step_confirm(cid, s):
     accounts = list_accounts(); sel = s.get("accounts") or []
     if "all" in sel: sel = list(accounts.keys())
@@ -4124,15 +4176,15 @@ async def send_step_confirm(cid, s):
     if s.get("infinite_loop"): extra = f"\n🔁 <b>{T('send_infinite')}</b>  ·  ⏱ {s.get('loop_delay', 3)}s"
     await panel(head("📤", "confirm") + _send_summary(s) + extra,
                 kb_([B(T("start"), "send:go")],
-                    [B(T("send_custom"), "send:back_edit"), B(T("cancel"), "send:cancel")]),
-                page_tag="send:confirm")
+                    [B(T("send_custom"), "send:back_edit"), B(T("cancel"), "send:cancel")]), page_tag="send:confirm")
+
 async def show_send_step(cid):
     s = _send_conv(cid); step = s["step"]
-    if step == "accounts":   await send_step_accounts(cid, s)
-    elif step == "compose":  await send_step_compose(cid, s)
-    elif step == "target":   await send_step_target(cid, s)
-    elif step == "max":      await send_step_max(cid, s)
-    elif step == "confirm":  await send_step_confirm(cid, s)
+    if step == "accounts": await send_step_accounts(cid, s)
+    elif step == "compose": await send_step_compose(cid, s)
+    elif step == "target": await send_step_target(cid, s)
+    elif step == "max": await send_step_max(cid, s)
+    elif step == "confirm": await send_step_confirm(cid, s)
 
 # ═══════════════ JOINER UI ═══════════════
 def _jl_conv(cid):
@@ -4140,154 +4192,157 @@ def _jl_conv(cid):
     if "jl" not in c:
         c["jl"] = {"step": "account", "accounts": [], "max_join": 0, "speed": "fast", "groups_only": True}
     return c["jl"]
+
 async def jl_step_account(cid, s):
     accounts = list_accounts()
-    if not accounts:
-        return await panel(T("jl_no_account"), kb_([B(f"➕ {T('add_account')}", "acc:add")], nav()), page_tag="jl:1")
+    if not accounts: return await panel(T("jl_no_account"), kb_([B(f"➕ {T('add_account')}", "acc:add")], nav()), page_tag="jl:1")
     sel = set(s.get("accounts") or [])
-    rows = grid([B(SEL(aid in sel, short(a.get('name', '?'), 14)), f"jl:acc:{aid}")
-                 for aid, a in accounts.items()])
+    rows = grid([B(SEL(aid in sel, short(a.get('name', '?'), 14)), f"jl:acc:{aid}") for aid, a in accounts.items()])
     rows.append([B(T("next"), "jl:next")]); rows.append([B(T("back_to_panel"), "menu:main")])
-    await panel(head("🤝", "joiner", dots(1, 3)) + f"{T('jl_select')}  <b>{len(sel)}</b>",
-                kb_(*rows), page_tag="jl:1")
+    await panel(head("🤝", "joiner", dots(1, 3)) + f"{T('jl_select')}  <b>{len(sel)}</b>", kb_(*rows), page_tag="jl:1")
+
 async def jl_step_settings(cid, s):
     speed = s.get("speed", "fast"); lds = load_link_donies()
     lbl = next((T(l) for k, l, _ in JL_SPEEDS if k == speed), "—")
     grp = T("on") if s.get("groups_only", True) else T("off")
-    txt = (head("🤝", "joiner", dots(2, 3))
-           + mrow("🚀", "jl_speed", lbl) + "\n"
-           + mrow("📡", "jl_ld", len(lds)) + "\n"
-           + mrow("👥", "jl_grp_only", grp))
+    txt = head("🤝", "joiner", dots(2, 3)) + mrow("🚀", "jl_speed", lbl) + "\n" + mrow("📡", "jl_ld", len(lds)) + "\n" + mrow("👥", "jl_grp_only", grp)
     rows = grid([B(SEL(speed == k, T(l)), f"jl:speed:{k}") for k, l, _ in JL_SPEEDS])
     rows.append([B(f"📡 {T('jl_ld')} ({len(lds)})", "jl:linkdonies")])
     rows.append([B(SEL(s.get("groups_only", True), T("jl_grp_only")), "jl:toggle_groups_only")])
-    rows.append([B(T("next"), "jl:next")])
-    rows.append(nav("jl:back"))
+    rows.append([B(T("next"), "jl:next")]); rows.append(nav("jl:back"))
     await panel(txt, kb_(*rows), page_tag="jl:2")
+
 async def jl_step_max(cid, s):
     mx = s.get("max_join", 0)
     mk = lambda n: B(SEL(mx == n, str(n)), f"jl:max:{n}")
     txt = head("🤝", "joiner", dots(3, 3)) + f"{T('jl_max')}: <b>{mx if mx else '∞'}</b>"
-    rows = [[mk(50), mk(100), mk(200)], [mk(500), mk(1000), mk(2000)],
-            [B(T("send_custom"), "jl:max:custom")]]
+    rows = [[mk(50), mk(100), mk(200)], [mk(500), mk(1000), mk(2000)], [B(T("send_custom"), "jl:max:custom")]]
     if mx: rows.append([B(T("start"), "jl:go")])
     rows.append(nav("jl:back"))
     await panel(txt, kb_(*rows), page_tag="jl:3")
+
 async def show_jl_step(cid):
     s = _jl_conv(cid)
-    if s["step"] == "account":  await jl_step_account(cid, s)
+    if s["step"] == "account": await jl_step_account(cid, s)
     if s["step"] == "settings": await jl_step_settings(cid, s)
-    if s["step"] == "max":      await jl_step_max(cid, s)
+    if s["step"] == "max": await jl_step_max(cid, s)
 
 # ═══════════════ LEFTER UI ═══════════════
 def _lf_conv(cid):
     c = get_conv(cid)
     if "lf" not in c: c["lf"] = {"step": "account", "accounts": [], "mode": "all", "delay": 0.8}
     return c["lf"]
-def _lf_modes():
-    return [("all", "lf_mode_all"), ("groups", "lf_mode_groups"),
-            ("channels", "lf_mode_channels"), ("closed", "lf_mode_closed")]
+def _lf_modes(): return [("all", "lf_mode_all"), ("groups", "lf_mode_groups"), ("channels", "lf_mode_channels"), ("closed", "lf_mode_closed")]
+
 async def lf_step_account(cid, s):
     accounts = list_accounts()
-    if not accounts:
-        return await panel(T("jl_no_account"), kb_([B(f"➕ {T('add_account')}", "acc:add")], nav()), page_tag="lf:1")
+    if not accounts: return await panel(T("jl_no_account"), kb_([B(f"➕ {T('add_account')}", "acc:add")], nav()), page_tag="lf:1")
     sel = set(s.get("accounts") or [])
-    rows = grid([B(SEL(aid in sel, short(a.get('name', '?'), 14)), f"lf:acc:{aid}")
-                 for aid, a in accounts.items()])
+    rows = grid([B(SEL(aid in sel, short(a.get('name', '?'), 14)), f"lf:acc:{aid}") for aid, a in accounts.items()])
     rows.append([B(T("next"), "lf:next")]); rows.append([B(T("back_to_panel"), "menu:main")])
-    await panel(head("🚪", "lefter", dots(1, 3)) + f"{T('jl_select')}  <b>{len(sel)}</b>",
-                kb_(*rows), page_tag="lf:1")
+    await panel(head("🚪", "lefter", dots(1, 3)) + f"{T('jl_select')}  <b>{len(sel)}</b>", kb_(*rows), page_tag="lf:1")
+
 async def lf_step_mode(cid, s):
     mode = s.get("mode", "all")
     btns = [B(SEL(mode == k, T(l)), f"lf:mode:{k}") for k, l in _lf_modes()]
-    rows = [[b] for b in btns]
-    rows.append([B(T("next"), "lf:next")])
-    rows.append(nav("lf:back"))
+    rows = [[b] for b in btns]; rows.append([B(T("next"), "lf:next")]); rows.append(nav("lf:back"))
     await panel(head("🚪", "lefter", dots(2, 3)) + T("lf_mode"), kb_(*rows), page_tag="lf:2")
+
 async def lf_step_delay(cid, s):
     d = s.get("delay", 0.8)
     mk = lambda n, l: B(SEL(abs(d - n) < 0.01, l), f"lf:delay:{n}")
     txt = head("🚪", "lefter", dots(3, 3)) + f"{T('lf_delay')}: <b>{d}s</b>"
-    rows = [[mk(0.3, "🚀 0.3s"), mk(0.8, "⚡ 0.8s"), mk(1.5, "🐢 1.5s")],
-            [mk(3.0, "🛡 3s")],
-            [B(T("start"), "lf:go")],
-            nav("lf:back")]
+    rows = [[mk(0.3, "🚀 0.3s"), mk(0.8, "⚡ 0.8s"), mk(1.5, "🐢 1.5s")], [mk(3.0, "🛡 3s")], [B(T("start"), "lf:go")], nav("lf:back")]
     await panel(txt, kb_(*rows), page_tag="lf:3")
+
 async def show_lf_step(cid):
     s = _lf_conv(cid)
     if s["step"] == "account": await lf_step_account(cid, s)
-    if s["step"] == "mode":    await lf_step_mode(cid, s)
-    if s["step"] == "delay":   await lf_step_delay(cid, s)
+    if s["step"] == "mode": await lf_step_mode(cid, s)
+    if s["step"] == "delay": await lf_step_delay(cid, s)
 
 # ═══════════════ TEMPLATES UI ═══════════════
 async def show_at_menu():
+    _ensure_template_nums()
     tpls = list_templates()
-    txt = head("🎯", "at_title", len(tpls))
-    txt += f"<i>{T('at_desc')}</i>"
+    txt = head("🎯", "at_title", len(tpls)) + f"<i>{T('at_desc')}</i>"
     rows = []
     for tid, t in list(tpls.items())[:8]:
         parts = []
-        if t.get("channel", {}).get("title"):
-            parts.append("🌐" if t.get("channel", {}).get("type") == "public" else "🔒")
+        num = t.get("num_id", "?")
+        if t.get("channel", {}).get("title"): parts.append("🌐" if t.get("channel", {}).get("type") == "public" else "🔒")
         if t.get("profile", {}).get("first_name") or t.get("profile", {}).get("bio"): parts.append("📝")
         if int(t.get("joiner", {}).get("max_join", 0) or 0) > 0: parts.append("🤝")
         if t.get("sender", {}).get("text"): parts.append("📤")
         if t.get("pv", {}).get("items"): parts.append("💬")
         if t.get("lefter", {}).get("leave_mode"): parts.append("🚪")
+        if (t.get("channel") or {}).get("initial_messages"): parts.append("📨")
         badge = " ".join(parts) or "∅"
-        rows.append([B(f"🎯 {short(t.get('name', '?'), 16)}  ·  {badge}", f"at:{tid}:view")])
-    rows.append([B(f"➕ {T('at_new')}", "at:new")])
-    rows.append(nav())
+        rows.append([B(f"#{num} 🎯 {short(t.get('name', '?'), 16)}  ·  {badge}", f"at:{tid}:view")])
+    rows.append([B(f"➕ {T('at_new')}", "at:new")]); rows.append(nav())
     await panel(txt, kb_(*rows), page_tag="at:menu")
+
 async def show_at_view(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
-    ch = t.get("channel", {}); pr = t.get("profile", {})
-    jn = t.get("joiner", {}); sn = t.get("sender", {})
-    lf = t.get("lefter", {}); pv = t.get("pv", {})
+    ch = t.get("channel", {}); pr = t.get("profile", {}); jn = t.get("joiner", {}); sn = t.get("sender", {}); lf = t.get("lefter", {}); pv = t.get("pv", {})
+    init_msgs = ch.get("initial_messages") or []
     def bd(d, k): return "🟢" if d.get(k) else "⚪"
     def bdn(d, k): return "🟢" if int(d.get(k, 0) or 0) > 0 else "⚪"
-    txt = head("🎯", t.get("name", "?"))
+    num = t.get("num_id", "?")
+    txt = head("🎯", f"#{num} {t.get('name', '?')}")
     txt += f"🏗 {T('at_channel')}: {bd(ch, 'title')}"
     if ch.get("title"): txt += f" <i>{esc(short(ch['title'], 20))}</i>"
     txt += f"\n📝 {T('at_profile')}: {bd(pr, 'first_name') or bd(pr, 'bio') or bd(pr, 'username')}"
     txt += f"\n🤝 {T('at_joiner')}: {bdn(jn, 'max_join')}"
     if int(jn.get('max_join', 0) or 0) > 0: txt += f" <i>({jn['max_join']})</i>"
     txt += f"\n📤 {T('at_sender')}: {bd(sn, 'text')}"
-    pv_items = pv.get("items") or []
-    txt += f"\n💬 {T('at_pv')}: {'🟢' if pv.get('enabled') else '⚪'}  ·  {len(pv_items)}"
+    txt += f"\n💬 {T('at_pv')}: {'🟢' if pv.get('enabled') else '⚪'}  ·  {len(pv.get('items') or [])}"
     txt += f"\n🚪 {T('at_lefter')}: 🟢 <i>{lf.get('leave_mode', '?')}</i>"
-    rows = grid([
-        B(T("at_channel"), f"at:{tid}:ch"), B(T("at_profile"), f"at:{tid}:pr"),
-        B(T("at_joiner"), f"at:{tid}:jn"), B(T("at_sender"), f"at:{tid}:sn"),
-        B(T("at_pv"), f"at:{tid}:pv"), B(T("at_lefter"), f"at:{tid}:lf"),
-        B(T("at_rename"), f"at:{tid}:rename"),
-    ])
-    rows.append([B(T("at_run"), f"at:{tid}:run")])
-    rows.append([B(T("at_delete"), f"at:{tid}:del"), B(T("back_to_panel"), "menu:main")])
+    txt += f"\n📨 {T('at_init_msgs')}: <b>{len(init_msgs)}</b>"
+    rows = grid([B(T("at_channel"), f"at:{tid}:ch"), B(T("at_profile"), f"at:{tid}:pr"), B(T("at_joiner"), f"at:{tid}:jn"), B(T("at_sender"), f"at:{tid}:sn"), B(T("at_pv"), f"at:{tid}:pv"), B(T("at_lefter"), f"at:{tid}:lf"), B(T("at_rename"), f"at:{tid}:rename")])
+    rows.append([B(T("at_run"), f"at:{tid}:run")]); rows.append([B(T("at_delete"), f"at:{tid}:del"), B(T("back_to_panel"), "menu:main")])
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:view")
+
 async def show_at_channel(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
-    c = t.get("channel", {})
-    is_pub = c.get("type", "private") == "public"
+    c = t.get("channel", {}); is_pub = c.get("type", "private") == "public"
+    init_msgs = c.get("initial_messages") or []
     txt = head("🏗", "at_channel", t.get("name", "?"))
     txt += mrow("🔖", "type", (T("public") if is_pub else T("private"))) + "\n"
     txt += mrow("📝", "channel_title", c.get("title") or "—") + "\n"
     if is_pub: txt += mrow("🔤", "username", c.get("username") or "—") + "\n"
     txt += mrow("📖", "about", short(c.get("about", ""), 40) or "—") + "\n"
     txt += mrow("🖼", "photo", os.path.basename(c.get("photo_file", "")) or "—") + "\n"
-    txt += f"\n<b>{T('vars')}</b>: <code>{{n}} {{rnd}} {{Link_private}}</code>"
+    txt += mrow("📨", "at_init_msgs", len(init_msgs))
+    txt += f"\n\n<b>{T('vars')}</b>: <code>{{n}} {{rnd}} {{Link_private}}</code>"
     rows = [
-        [B(SEL(is_pub, T("public")), f"at:{tid}:chtype:public"),
-         B(SEL(not is_pub, T("private")), f"at:{tid}:chtype:private")],
+        [B(SEL(is_pub, T("public")), f"at:{tid}:chtype:public"), B(SEL(not is_pub, T("private")), f"at:{tid}:chtype:private")],
         [B(T("channel_title"), f"at:{tid}:chset:title")],
     ]
     if is_pub: rows.append([B(T("username"), f"at:{tid}:chset:username")])
     rows.append([B(T("about"), f"at:{tid}:chset:about")])
     rows.append([B(T("photo"), f"at:{tid}:chset:photo_file")])
+    rows.append([B(f"📨 {T('at_init_msgs')} ({len(init_msgs)})", f"at:{tid}:chmsg:list")])
+    rows.append([B(f"➕ {T('at_init_add_text')}", f"at:{tid}:chmsg:add_text"), B(f"📎 {T('at_init_add_file')}", f"at:{tid}:chmsg:add_file")])
     rows.append(nav(f"at:{tid}:view"))
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:ch")
+
+async def show_at_chmsg_list(tid):
+    t = get_template(tid)
+    if not t: return await show_at_menu()
+    msgs = (t.get("channel") or {}).get("initial_messages") or []
+    txt = head("📨", "at_init_msgs", len(msgs))
+    if not msgs: txt += T("at_init_empty")
+    for i, m in enumerate(msgs, 1):
+        k = m.get("kind", "text")
+        if k == "text": txt += f"\n{i}. 💬 <code>{esc(short(m.get('text',''), 60))}</code>"
+        elif k == "file": txt += f"\n{i}. 📁 <code>{esc(os.path.basename(m.get('file_path','?')))}</code>"
+    rows = [[B(f"🗑 {i+1}", f"at:{tid}:chmsg:del:{i}")] for i in range(len(msgs))]
+    rows.append([B(f"« {T('back')}", f"at:{tid}:ch")])
+    await panel(txt, kb_(*rows), page_tag=f"at:{tid}:chmsg_list")
+
 async def show_at_profile(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
@@ -4298,44 +4353,29 @@ async def show_at_profile(tid):
     txt += mrow("🔤", "username", p.get("username") or "—") + "\n"
     txt += mrow("📖", "bio", short(p.get("bio", ""), 60) or "—") + "\n"
     txt += mrow("🖼", "photo", os.path.basename(p.get("photo_file", "")) or "—")
-    rows = [
-        [B(T("name"), f"at:{tid}:prset:first_name"), B(T("last_name"), f"at:{tid}:prset:last_name")],
-        [B(T("username"), f"at:{tid}:prset:username"), B(T("bio"), f"at:{tid}:prset:bio")],
-        [B(T("photo"), f"at:{tid}:prset:photo_file")],
-        nav(f"at:{tid}:view"),
-    ]
+    txt += f"\n\n<i>🔧 هنگام اجرا: اول عکس‌های قبلی پاک می‌شن، بعد عکس جدید آپلود می‌شه</i>"
+    rows = [[B(T("name"), f"at:{tid}:prset:first_name"), B(T("last_name"), f"at:{tid}:prset:last_name")], [B(T("username"), f"at:{tid}:prset:username"), B(T("bio"), f"at:{tid}:prset:bio")], [B(T("photo"), f"at:{tid}:prset:photo_file")], nav(f"at:{tid}:view")]
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:pr")
+
 async def show_at_joiner(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
-    j = t.get("joiner", {})
-    spd = j.get("speed")
-    spd_lbl = next((T(l) for k, l, _ in JL_SPEEDS if k == spd), spd)
+    j = t.get("joiner", {}); spd = j.get("speed"); spd_lbl = next((T(l) for k, l, _ in JL_SPEEDS if k == spd), spd)
     txt = head("🤝", "at_joiner", t.get("name", "?"))
-    txt += mrow("🎯", "jl_max", j.get("max_join", 0)) + "\n"
-    txt += mrow("🚀", "jl_speed", spd_lbl) + "\n"
-    txt += mrow("👥", "jl_grp_only", ("🟢" if j.get("groups_only", True) else "⚪"))
+    txt += mrow("🎯", "jl_max", j.get("max_join", 0)) + "\n" + mrow("🚀", "jl_speed", spd_lbl) + "\n" + mrow("👥", "jl_grp_only", ("🟢" if j.get("groups_only", True) else "⚪"))
     rows = [[B(T("jl_max"), f"at:{tid}:jnset:max_join")]]
     rows += grid([B(SEL(spd == k, T(l)), f"at:{tid}:jnspeed:{k}") for k, l, _ in JL_SPEEDS])
-    rows.append([B(SEL(j.get("groups_only", True), T("jl_grp_only")), f"at:{tid}:jntoggle_groups_only")])
-    rows.append(nav(f"at:{tid}:view"))
+    rows.append([B(SEL(j.get("groups_only", True), T("jl_grp_only")), f"at:{tid}:jntoggle_groups_only")]); rows.append(nav(f"at:{tid}:view"))
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:jn")
+
 async def show_at_sender(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
     s = t.get("sender", {})
-    mode_labels = {"send_only": T("at_mode_only"), "join_send": T("at_mode_js"),
-                   "join_send_leave": T("at_mode_jsl")}
-    ed_on = bool(s.get("edit_delay_enabled", False))
-    ed_sec = s.get("edit_delay_seconds", 3.0)
-    ed_rand = bool(s.get("edit_delay_random", False))
-    ph = s.get("placeholder_text", "سلام")
-    ph_rand = bool(s.get("placeholder_random", False))
-    ms_on = bool(s.get("multi_step_edit", False))
-    af = s.get("attach_file") or ""
-    inf_on = bool(s.get("infinite_loop", False))
-    ld = s.get("loop_delay", 3.0)
-    rs = bool(s.get("rescan_targets", True))
+    mode_labels = {"send_only": T("at_mode_only"), "join_send": T("at_mode_js"), "join_send_leave": T("at_mode_jsl")}
+    ed_on = bool(s.get("edit_delay_enabled", False)); ed_sec = s.get("edit_delay_seconds", 3.0); ed_rand = bool(s.get("edit_delay_random", False))
+    ph = s.get("placeholder_text", "سلام"); ph_rand = bool(s.get("placeholder_random", False)); ms_on = bool(s.get("multi_step_edit", False))
+    af = s.get("attach_file") or ""; inf_on = bool(s.get("infinite_loop", False)); ld = s.get("loop_delay", 3.0); rs = bool(s.get("rescan_targets", True))
     txt = head("📤", "at_sender", t.get("name", "?"))
     txt += mrow("✉️", "text", short(s.get("text", ""), 50) or "—") + "\n"
     txt += mrow("🎯", "target", s.get("target", "?")) + "\n"
@@ -4343,48 +4383,39 @@ async def show_at_sender(tid):
     txt += mrow("🔢", "max", s.get("max_send", 0) or "∞") + "\n"
     txt += mrow("⏱", "delay", f"{s.get('delay', 1.5)}s") + "\n"
     txt += mrow("🎭", "send_edit", ("🟢" if ed_on else "⚪"))
-    if ed_on:
-        if ed_rand: txt += f" 🎲"
-        else: txt += f" {ed_sec}s"
-        txt += f"\n💬 <code>{esc(ph)}</code>"
+    if ed_on: txt += f" 🎲" if ed_rand else f" {ed_sec}s"; txt += f"\n💬 <code>{esc(ph)}</code>"
     txt += f"\n🔁 {T('send_infinite')}: {'🟢' if inf_on else '⚪'}"
-    if inf_on:
-        txt += f"  ⏱ {ld}s"
-        txt += f"\n🔄 {T('send_rescan')}: {'🟢' if rs else '⚪'}"
+    if inf_on: txt += f"  ⏱ {ld}s"; txt += f"\n🔄 {T('send_rescan')}: {'🟢' if rs else '⚪'}"
     txt += f"\n📎 <code>{esc(os.path.basename(af) if af else '—')}</code>"
     rows = [
         [B(T("text"), f"at:{tid}:snset:text")],
         [B(T("target"), f"at:{tid}:snset:target"), B(T("max"), f"at:{tid}:snset:max_send")],
         [B(T("delay"), f"at:{tid}:snset:delay"), B(T("mode"), f"at:{tid}:snmode")],
-        [B(SEL(inf_on, T("send_infinite")), f"at:{tid}:sntoggle_loop"),
-         B(f"⏱ {ld}s", f"at:{tid}:snset_loop_delay")],
+        [B(SEL(inf_on, T("send_infinite")), f"at:{tid}:sntoggle_loop"), B(f"⏱ {ld}s", f"at:{tid}:snset_loop_delay")],
         [B(SEL(rs, T("send_rescan")), f"at:{tid}:sntoggle_rescan")],
         [B(SEL(ed_on, T("send_edit")), f"at:{tid}:snedit:toggle")],
         [B(f"⏱ {ed_sec}s", f"at:{tid}:snedit:sec"), B(f"💬 PH", f"at:{tid}:snedit:ph")],
-        [B(SEL(ph_rand, T("send_ph_list")), f"at:{tid}:snedit:ph_rand"),
-         B(SEL(ms_on, T("send_multi")), f"at:{tid}:snedit:multi_toggle")],
+        [B(SEL(ph_rand, T("send_ph_list")), f"at:{tid}:snedit:ph_rand"), B(SEL(ms_on, T("send_multi")), f"at:{tid}:snedit:multi_toggle")],
         [B(f"📎 {esc(os.path.basename(af) if af else T('add'))}", f"at:{tid}:snedit:file")],
         nav(f"at:{tid}:view"),
     ]
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:sn")
+
 async def show_at_sender_mode(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
     cur = t["sender"].get("mode", "send_only")
-    opts = [("send_only", T("at_mode_only")), ("join_send", T("at_mode_js")),
-            ("join_send_leave", T("at_mode_jsl"))]
+    opts = [("send_only", T("at_mode_only")), ("join_send", T("at_mode_js")), ("join_send_leave", T("at_mode_jsl"))]
     txt = head("🔁", "mode") + f"<b>{cur}</b>"
     rows = grid([B(SEL(cur == k, l), f"at:{tid}:snmode_set:{k}") for k, l in opts])
     rows.append(nav(f"at:{tid}:sn"))
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:snmode")
+
 async def show_at_pv(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
-    pv = t.get("pv", {})
-    en = bool(pv.get("enabled"))
-    mx = int(pv.get("max_replies", 1) or 0)
-    items = pv.get("items") or []
-    apply_acc = bool(pv.get("apply_to_accounts", True))
+    pv = t.get("pv", {}); en = bool(pv.get("enabled")); mx = int(pv.get("max_replies", 1) or 0)
+    items = pv.get("items") or []; apply_acc = bool(pv.get("apply_to_accounts", True))
     txt = head("💬", "at_pv", t.get("name", "?"))
     txt += mrow("📶", "pv_status", (T("pv_active") if en else T("pv_inactive"))) + "\n"
     txt += mrow("👥", "pv_max", (mx if mx else "∞")) + "\n"
@@ -4398,16 +4429,14 @@ async def show_at_pv(tid):
         elif k == "delay": txt += f"{i}. ⏸ {it.get('seconds', 3)}s\n"
     rows = [
         [B(T("toggle_off") if en else T("toggle_on"), f"at:{tid}:pv:toggle")],
-        [B(f"{T('pv_max')}: {mx if mx else '∞'}", f"at:{tid}:pv:cycle_max"),
-         B(T("pv_delay"), f"at:{tid}:pv:set_delay")],
-        [B(T("pv_add_text"), f"at:{tid}:pv:add_text"),
-         B(T("pv_add_file"), f"at:{tid}:pv:add_saved"),
-         B(T("pv_add_delay"), f"at:{tid}:pv:add_delay")],
+        [B(f"{T('pv_max')}: {mx if mx else '∞'}", f"at:{tid}:pv:cycle_max"), B(T("pv_delay"), f"at:{tid}:pv:set_delay")],
+        [B(T("pv_add_text"), f"at:{tid}:pv:add_text"), B(T("pv_add_file"), f"at:{tid}:pv:add_saved"), B(T("pv_add_delay"), f"at:{tid}:pv:add_delay")],
         [B(SEL(apply_acc, T("at_apply_acc")), f"at:{tid}:pv:toggle_apply")],
         [B(T("pv_list"), f"at:{tid}:pv:list")],
         nav(f"at:{tid}:view"),
     ]
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:pv")
+
 async def show_at_pv_list(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
@@ -4421,61 +4450,51 @@ async def show_at_pv_list(tid):
     rows = [[B(f"{T('delete')} {i+1}", f"at:{tid}:pv:del:{i}")] for i in range(len(items))]
     rows.append([B(f"« {T('back')}", f"at:{tid}:pv")])
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:pv_list")
+
 async def show_at_lefter(tid):
     t = get_template(tid)
     if not t: return await show_at_menu()
     l = t.get("lefter", {})
-    txt = head("🚪", "at_lefter", t.get("name", "?"))
-    txt += f"🎯 {T('lf_mode')}: <b>{l.get('leave_mode', '?')}</b>"
+    txt = head("🚪", "at_lefter", t.get("name", "?")) + f"🎯 {T('lf_mode')}: <b>{l.get('leave_mode', '?')}</b>"
     rows = []
-    for k, lbl in _lf_modes():
-        rows.append([B(SEL(l.get("leave_mode") == k, T(lbl)), f"at:{tid}:lfset:{k}")])
+    for k, lbl in _lf_modes(): rows.append([B(SEL(l.get("leave_mode") == k, T(lbl)), f"at:{tid}:lfset:{k}")])
     rows.append(nav(f"at:{tid}:view"))
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:lf")
+
 async def show_at_run(tid, page=0):
     t = get_template(tid)
     if not t: return await show_at_menu()
-    accounts = list_accounts(); items = list(accounts.items())
-    per = 6; pages = max(1, -(-len(items) // per)); page = max(0, min(page, pages - 1))
-    chunk = items[page * per:(page + 1) * per]
-    cid = STATE.get("owner")
-    conv = get_conv(cid) if cid else {}
+    accounts = list_accounts(); items = list(accounts.items()); per = 6
+    pages = max(1, -(-len(items) // per)); page = max(0, min(page, pages - 1)); chunk = items[page * per:(page + 1) * per]
+    cid = STATE.get("owner"); conv = get_conv(cid) if cid else {}
     selected = set((conv.get("at_run") or {}).get("accounts") or [])
     rows = []
-    for aid, a in chunk:
-        rows.append([B(SEL(aid in selected, short(a.get('name', '?'), 20)), f"at:{tid}:run_acc:{aid}")])
+    for aid, a in chunk: rows.append([B(SEL(aid in selected, short(a.get('name', '?'), 20)), f"at:{tid}:run_acc:{aid}")])
     if pages > 1:
         pr = []
         if page > 0: pr.append(B(T("prev"), f"at:{tid}:run:{page - 1}"))
         pr.append(B(f"{page + 1}/{pages}", "noop"))
         if page < pages - 1: pr.append(B(T("next"), f"at:{tid}:run:{page + 1}"))
         rows.append(pr)
-    rows.append([B(T("start"), f"at:{tid}:run_go")])
-    rows.append(nav(f"at:{tid}:view"))
-    txt = head("🎯", "at_run_title", t.get("name", "?"))
-    txt += f"{T('jl_selected')}: <b>{len(selected)}</b>"
+    rows.append([B(T("start"), f"at:{tid}:run_go")]); rows.append(nav(f"at:{tid}:view"))
+    txt = head("🎯", "at_run_title", t.get("name", "?")) + f"{T('jl_selected')}: <b>{len(selected)}</b>"
     await panel(txt, kb_(*rows), page_tag=f"at:{tid}:run:{page}")
+
 async def show_acc_at_menu(aid):
     a = get_account(aid)
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
-    tpls = list_templates()
-    txt = head("🎯", "auto_tar", a.get("name", "?"))
-    if not tpls:
-        return await panel(txt + "\n\n" + T("empty"),
-                           kb_([B(f"➕ {T('at_new')}", "at:new"), B(T("back_to_panel"), "menu:main")]),
-                           page_tag=f"acc:at:{aid}")
-    rows = []
-    for tid, t in list(tpls.items())[:10]:
-        rows.append([B(f"🎯 {short(t.get('name', '?'), 22)}", f"acc:at:run:{aid}:{tid}")])
+    _ensure_template_nums()
+    tpls = list_templates(); txt = head("🎯", "auto_tar", a.get("name", "?"))
+    if not tpls: return await panel(txt + "\n\n" + T("empty"), kb_([B(f"➕ {T('at_new')}", "at:new"), B(T("back_to_panel"), "menu:main")]), page_tag=f"acc:at:{aid}")
+    rows = [[B(f"#{t.get('num_id','?')} 🎯 {short(t.get('name', '?'), 22)}", f"acc:at:run:{aid}:{tid}")] for tid, t in list(tpls.items())[:10]]
     rows.append(nav(f"acc:view:{aid}"))
     await panel(txt, kb_(*rows), page_tag=f"acc:at:{aid}")
+
 async def show_acc_lf(aid):
     a = get_account(aid)
     if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
     txt = head("🚪", "lefter", a.get("name", "?"))
-    rows = []
-    for k, lbl in _lf_modes():
-        rows.append([B(T(lbl), f"acc:lf:go:{aid}:{k}")])
+    rows = [[B(T(lbl), f"acc:lf:go:{aid}:{k}")] for k, lbl in _lf_modes()]
     rows.append(nav(f"acc:view:{aid}"))
     await panel(txt, kb_(*rows), page_tag=f"acc:lf:{aid}")
 
@@ -4504,28 +4523,26 @@ async def _on_message_impl(update, context):
                     kb_([B(T("add_account"), "acc:add")], [B(T("back_to_panel"), "menu:main")]), page_tag="main"); return
 
     if conv.get("pv_acc_wait"):
-        w = conv.pop("pv_acc_wait")
-        aid = w.get("aid"); kind = w.get("kind")
+        w = conv.pop("pv_acc_wait"); aid = w.get("aid"); kind = w.get("kind")
         cfg = _load_pv_account(aid); items = cfg.get("items") or []
         if kind == "delay":
             try: cfg["delay_seconds"] = max(0, int(re.sub(r"[^\d]", "", text) or "0"))
-            except: cfg["delay_seconds"] = 0
+            except Exception: cfg["delay_seconds"] = 0
         elif kind == "poll":
             try: cfg["poll_seconds"] = max(2, int(re.sub(r"[^\d]", "", text) or "3"))
-            except: cfg["poll_seconds"] = 3
+            except Exception: cfg["poll_seconds"] = 3
         elif kind == "add_text":
             items.append({"kind": "text", "text": text}); cfg["items"] = items
         elif kind == "add_delay_sec":
             try: sec = max(0, int(re.sub(r"[^\d]", "", text) or "3"))
-            except: sec = 3
+            except Exception: sec = 3
             items.append({"kind": "delay", "seconds": sec}); cfg["items"] = items
         _save_pv_account(aid, cfg)
         await tg_send("✅")
         return await show_pv_account_menu(aid)
 
     if conv.get("pv_acc_save_msg"):
-        w = conv.pop("pv_acc_save_msg")
-        aid = w.get("aid")
+        w = conv.pop("pv_acc_save_msg"); aid = w.get("aid")
         media = _extract_media(msg); caption = text or ""
         if not media and not caption: return await ask(T("enter"))
         local_path = None
@@ -4540,29 +4557,25 @@ async def _on_message_impl(update, context):
         return await show_pv_account_menu(aid)
 
     if conv.get("pv_tpl_wait"):
-        w = conv.pop("pv_tpl_wait")
-        tid = w.get("tid"); kind = w.get("kind")
+        w = conv.pop("pv_tpl_wait"); tid = w.get("tid"); kind = w.get("kind")
         t = get_template(tid)
         if not t: return await show_at_menu()
         pv = t.setdefault("pv", {}); items = pv.get("items") or []
         if kind == "delay":
             try: pv["delay_seconds"] = max(0, int(re.sub(r"[^\d]", "", text) or "0"))
-            except: pv["delay_seconds"] = 0
+            except Exception: pv["delay_seconds"] = 0
             update_template(tid, "pv", "delay_seconds", pv["delay_seconds"])
         elif kind == "add_text":
-            items.append({"kind": "text", "text": text})
-            update_template(tid, "pv", "items", items)
+            items.append({"kind": "text", "text": text}); update_template(tid, "pv", "items", items)
         elif kind == "add_delay_sec":
             try: sec = max(0, int(re.sub(r"[^\d]", "", text) or "3"))
-            except: sec = 3
-            items.append({"kind": "delay", "seconds": sec})
-            update_template(tid, "pv", "items", items)
+            except Exception: sec = 3
+            items.append({"kind": "delay", "seconds": sec}); update_template(tid, "pv", "items", items)
         await tg_send("✅")
         return await show_at_pv(tid)
 
     if conv.get("pv_tpl_save_msg"):
-        w = conv.pop("pv_tpl_save_msg")
-        tid = w.get("tid")
+        w = conv.pop("pv_tpl_save_msg"); tid = w.get("tid")
         t = get_template(tid)
         if not t: return await show_at_menu()
         media = _extract_media(msg); caption = text or ""
@@ -4578,6 +4591,32 @@ async def _on_message_impl(update, context):
         await tg_send("✅")
         return await show_at_pv(tid)
 
+    # channel init messages
+    if conv.get("at_chmsg_text"):
+        w = conv.pop("at_chmsg_text"); tid = w.get("tid")
+        t = get_template(tid)
+        if not t: return await show_at_menu()
+        ch = t.setdefault("channel", {}); msgs = ch.get("initial_messages") or []
+        if not text: return await ask(T("at_init_q"))
+        msgs.append({"kind": "text", "text": text})
+        update_template(tid, "channel", "initial_messages", msgs)
+        await tg_send("✅")
+        return await show_at_chmsg_list(tid)
+
+    if conv.get("at_chmsg_file"):
+        w = conv.pop("at_chmsg_file"); tid = w.get("tid")
+        t = get_template(tid)
+        if not t: return await show_at_menu()
+        media = _extract_media(msg); caption = text or ""
+        if not media: return await ask(T("at_init_file_q"))
+        try: fpath = await _download_tg_file(media, "tplmsg", "chmsg")
+        except Exception as e: return await ask(f"❌ {str(e)[:100]}")
+        ch = t.setdefault("channel", {}); msgs = ch.get("initial_messages") or []
+        msgs.append({"kind": "file", "file_path": fpath, "caption": caption})
+        update_template(tid, "channel", "initial_messages", msgs)
+        await tg_send("✅")
+        return await show_at_chmsg_list(tid)
+
     if conv.get("accphoto_upload"):
         info = conv.pop("accphoto_upload"); aid = info["aid"]
         media = _extract_media(msg)
@@ -4591,7 +4630,12 @@ async def _on_message_impl(update, context):
         cli = None; ok = False; msg_r = ""
         try:
             cli, err = await _connect_with_retry(aid, a["session_string"], name=a.get("name"), tries=3)
-            if cli: ok, msg_r = await soroosh_set_profile_photo(cli, fpath)
+            if cli:
+                # delete first
+                try: await soroosh_delete_profile_photos(cli)
+                except Exception: pass
+                await asyncio.sleep(1.0)
+                ok, msg_r = await soroosh_set_profile_photo(cli, fpath)
             else: msg_r = f"connect: {err}"
         finally:
             if cli:
@@ -4628,15 +4672,13 @@ async def _on_message_impl(update, context):
 
     if conv.get("chfile_upload") and conv["chfile_upload"].get("step") == "wait_file":
         info = conv["chfile_upload"]; aid = info["aid"]; idx = info["idx"]
-        media = _extract_media(msg)
-        fpath = None
+        media = _extract_media(msg); fpath = None
         if media:
             try: fpath = await _download_tg_file(media, aid, "chfile")
             except Exception as e: return await ask(f"❌ {str(e)[:100]}")
         elif text and os.path.exists(text.strip()): fpath = text.strip()
         if not fpath: return await ask(T("ch_file_q"))
-        info["file_path"] = fpath; info["step"] = "wait_caption"
-        conv["chfile_upload"] = info
+        info["file_path"] = fpath; info["step"] = "wait_caption"; conv["chfile_upload"] = info
         return await ask(T("ch_caption_q"))
 
     if conv.get("chfile_upload") and conv["chfile_upload"].get("step") == "wait_caption":
@@ -4663,8 +4705,7 @@ async def _on_message_impl(update, context):
         return await show_channel_view(aid, idx)
 
     if conv.get("at_field_photo"):
-        info = conv.pop("at_field_photo")
-        tid = info["tid"]; section = info["section"]; field = info["field"]
+        info = conv.pop("at_field_photo"); tid = info["tid"]; section = info["section"]; field = info["field"]
         media = _extract_media(msg)
         if not media: return await ask(T("prof_no_photo"))
         try: fpath = await _download_tg_file(media, "tpl", "tplfile")
@@ -4679,20 +4720,19 @@ async def _on_message_impl(update, context):
     if cid in _TMP_EDIT:
         info = _TMP_EDIT.pop(cid)
         if info["kind"] == "at_field":
-            tid = info["tid"]; section = info["section"]; field = info["field"]
-            value = text
+            tid = info["tid"]; section = info["section"]; field = info["field"]; value = text
             if field in ("max_join", "max_send"):
                 try: value = int(re.sub(r"[^\d]", "", text) or "0")
-                except: value = 0
+                except Exception: value = 0
             elif field == "delay":
                 try: value = float(re.sub(r"[^\d\.]", "", text) or "1.5")
-                except: value = 1.5
+                except Exception: value = 1.5
             elif field == "edit_delay_seconds":
                 try: value = max(0.0, float(re.sub(r"[^\d\.]", "", text) or "3.0"))
-                except: value = 3.0
+                except Exception: value = 3.0
             elif field == "loop_delay":
                 try: value = max(0.5, float(re.sub(r"[^\d\.]", "", text) or "3.0"))
-                except: value = 3.0
+                except Exception: value = 3.0
             update_template(tid, section, field, value)
             await tg_send("✅")
             if section == "meta": return await show_at_view(tid)
@@ -4704,45 +4744,35 @@ async def _on_message_impl(update, context):
             if section == "lefter": return await show_at_lefter(tid)
 
     if conv.get("send_edit_wait"):
-        kind = conv.pop("send_edit_wait")
-        s = _send_conv(cid)
+        kind = conv.pop("send_edit_wait"); s = _send_conv(cid)
         if kind == "sec":
             try: s["edit_delay_seconds"] = max(0.0, float(re.sub(r"[^\d\.]", "", text) or "3.0"))
-            except: s["edit_delay_seconds"] = 3.0
+            except Exception: s["edit_delay_seconds"] = 3.0
         elif kind == "ph": s["placeholder_text"] = text or "سلام"
         elif kind == "loop_delay":
             try: s["loop_delay"] = max(0.5, float(re.sub(r"[^\d\.]", "", text) or "3.0"))
-            except: s["loop_delay"] = 3.0
+            except Exception: s["loop_delay"] = 3.0
         return await show_send_step(cid)
 
     if conv.get("send_file_upload"):
-        conv.pop("send_file_upload")
-        s = _send_conv(cid)
-        media = _extract_media(msg)
+        conv.pop("send_file_upload"); s = _send_conv(cid); media = _extract_media(msg)
         if media:
-            try: fpath = await _download_tg_file(media, "send", "sendfile")
+            try: fpath = await _download_tg_file(media, "send", "sendfile"); s["attach_file"] = fpath
             except Exception as e: return await ask(f"❌ {str(e)[:100]}")
-            s["attach_file"] = fpath
-        elif text and os.path.exists(text.strip()):
-            s["attach_file"] = text.strip()
+        elif text and os.path.exists(text.strip()): s["attach_file"] = text.strip()
         else: return await ask(T("send_attach_q"))
         await tg_send("✅")
         return await show_send_step(cid)
 
     if conv.get("cfg_wait"):
-        key = conv.pop("cfg_wait")
-        cfg = _load(CFG_FILE, DEFAULT_CFG)
+        key = conv.pop("cfg_wait"); cfg = _load(CFG_FILE, DEFAULT_CFG)
         try:
-            v = text.strip()
-            cfg[key] = float(v) if "." in v else int(v)
-            _save(CFG_FILE, cfg)
-            await tg_send("✅")
-        except: await tg_send(T("cfg_invalid"))
+            v = text.strip(); cfg[key] = float(v) if "." in v else int(v); _save(CFG_FILE, cfg); await tg_send("✅")
+        except Exception: await tg_send(T("cfg_invalid"))
         return await show_cfg()
 
     if conv.get("ld_wait") == "url":
-        back = conv.pop("ld_back", "jl:back_to_settings")
-        url = text.strip()
+        back = conv.pop("ld_back", "jl:back_to_settings"); url = text.strip()
         if url.startswith("splus.ir"): url = "https://" + url
         if url.startswith("soroush.ir"): url = "https://" + url
         if add_link_doni(url): await tg_send("✅")
@@ -4750,26 +4780,20 @@ async def _on_message_impl(update, context):
         return await show_linkdonies(back)
 
     if conv.get("setlink"):
-        info = conv.pop("setlink")
-        aid = info["aid"]; idx = info["idx"]
-        url = text.strip()
+        info = conv.pop("setlink"); aid = info["aid"]; idx = info["idx"]; url = text.strip()
         if not url: return await ask(T("ch_link_q"))
         if not url.startswith("http"): url = "https://" + url
-        update_channel_field(aid, idx, "join_link", url)
-        await tg_send("✅")
+        update_channel_field(aid, idx, "join_link", url); await tg_send("✅")
         return await show_channel_view(aid, idx)
 
     if conv.get("chsend") and conv["chsend"].get("step") == "compose":
-        info = conv.pop("chsend")
-        aid = info["aid"]; idx = info["idx"]
+        info = conv.pop("chsend"); aid = info["aid"]; idx = info["idx"]
         STATE["panel"].pop(cid, None)
         await panel(f"⏳ {T('loading')}", page_tag=f"chview:{aid}:{idx}")
         ok, msg_r = await send_to_channel(aid, idx, text)
         if ok:
-            return await panel(head("✅", "send") + f"💬 <code>{esc(text[:100])}</code>",
-                               kb_([B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
-        return await panel(f"❌ <code>{esc(str(msg_r)[:400])}</code>",
-                           kb_([B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
+            return await panel(head("✅", "send") + f"💬 <code>{esc(text[:100])}</code>", kb_([B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
+        return await panel(f"❌ <code>{esc(str(msg_r)[:400])}</code>", kb_([B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
 
     if conv.get("chnew"):
         info = conv["chnew"]; step = info.get("step"); aid = info.get("aid")
@@ -4811,22 +4835,16 @@ async def _on_message_impl(update, context):
             _STATS_CACHE.pop(aid, None)
             if ok:
                 store = _channel_data_from_obj(ch_obj)
-                store["username"] = uname; store["type"] = "public"
-                store["created"] = int(time.time())
+                store["username"] = uname; store["type"] = "public"; store["created"] = int(time.time())
                 add_channel_to_storage(aid, store)
                 body = head("✅", "ch_created") + f"📝 {esc(title)}\n🔗 @{esc(uname)}"
-                return await panel(body, kb_([B(f"⚙️ {T('my_channels')}", f"chlist:show:{aid}:0")],
-                                             [B(f"« {T('back')}", f"ch:menu:{aid}")]),
-                                   page_tag=f"ch_menu:{aid}")
-            return await panel(f"❌ <code>{esc(str(msg_r)[:300])}</code>",
-                               kb_([B(f"« {T('back')}", f"ch:menu:{aid}")]), page_tag=f"ch_menu:{aid}")
+                return await panel(body, kb_([B(f"⚙️ {T('my_channels')}", f"chlist:show:{aid}:0")], [B(f"« {T('back')}", f"ch:menu:{aid}")]), page_tag=f"ch_menu:{aid}")
+            return await panel(f"❌ <code>{esc(str(msg_r)[:300])}</code>", kb_([B(f"« {T('back')}", f"ch:menu:{aid}")]), page_tag=f"ch_menu:{aid}")
 
     if conv.get("chprof_edit"):
-        info = conv.pop("chprof_edit")
-        aid = info["aid"]; idx = info["idx"]; field = info["field"]
+        info = conv.pop("chprof_edit"); aid = info["aid"]; idx = info["idx"]; field = info["field"]
         a = get_account(aid); chs = get_stored_channels(aid)
-        if not a or idx >= len(chs):
-            return await panel(T("not_found"), kb_(nav()), page_tag="main")
+        if not a or idx >= len(chs): return await panel(T("not_found"), kb_(nav()), page_tag="main")
         ch = chs[idx]
         STATE["panel"].pop(cid, None)
         await panel(f"⏳ {T('loading')}", page_tag=f"chprof:{aid}:{idx}")
@@ -4835,8 +4853,7 @@ async def _on_message_impl(update, context):
             cli, err = await _connect_with_retry(aid, a["session_string"], name=a.get("name"), tries=3)
             if cli:
                 ent, _ = await _resolve_channel_entity(cli, ch, aid)
-                if not ent:
-                    ok, msg_r = False, "resolve"
+                if not ent: ok, msg_r = False, "resolve"
                 else:
                     if field == "title":
                         if EditTitleRequest:
@@ -4871,8 +4888,7 @@ async def _on_message_impl(update, context):
         return await show_ch_profile(aid, idx)
 
     if conv.get("prof_field"):
-        info = conv.pop("prof_field")
-        field = info["field"]; aid = info["aid"]
+        info = conv.pop("prof_field"); field = info["field"]; aid = info["aid"]
         STATE["panel"].pop(cid, None)
         a = get_account(aid)
         if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
@@ -4896,23 +4912,19 @@ async def _on_message_impl(update, context):
                 try: await cli._disconnect()
                 except Exception: pass
         if ok:
-            return await panel(head("✅", "profile") + f"<code>{esc(str(msg_r)[:200])}</code>",
-                               kb_([B(f"« {T('back')}", f"prof:menu:{aid}")]), page_tag=f"prof:{aid}")
-        return await panel(f"❌ <code>{esc(str(msg_r)[:300])}</code>",
-                           kb_([B(f"« {T('back')}", f"prof:menu:{aid}")]), page_tag=f"prof:{aid}")
+            return await panel(head("✅", "profile") + f"<code>{esc(str(msg_r)[:200])}</code>", kb_([B(f"« {T('back')}", f"prof:menu:{aid}")]), page_tag=f"prof:{aid}")
+        return await panel(f"❌ <code>{esc(str(msg_r)[:300])}</code>", kb_([B(f"« {T('back')}", f"prof:menu:{aid}")]), page_tag=f"prof:{aid}")
 
     if "jl_wait" in conv:
-        conv.pop("jl_wait")
-        jl = get_conv(cid).get("jl") or {}
+        conv.pop("jl_wait"); jl = get_conv(cid).get("jl") or {}
         try: jl["max_join"] = max(1, int(re.sub(r"[^\d]", "", text)))
-        except: return await ask(T("jl_max_q"))
+        except Exception: return await ask(T("jl_max_q"))
         get_conv(cid)["jl"] = jl; return await jl_step_max(cid, jl)
 
     if "send_wait" in conv:
-        conv.pop("send_wait")
-        s = _send_conv(cid)
+        conv.pop("send_wait"); s = _send_conv(cid)
         try: s["max"] = max(0, int(re.sub(r"[^\d]", "", text)))
-        except: return await ask(T("send_max_q"))
+        except Exception: return await ask(T("send_max_q"))
         return await show_send_step(cid)
 
     if "send" in conv:
@@ -4930,16 +4942,15 @@ async def _on_message_impl(update, context):
             try: ph = normalize_phone(text)
             except Exception as e: return await ask(T("invalid_phone"), note=str(e)[:150])
             a["phone"] = ph
-            await panel(f"⏳ {T('loading')} <code>{esc(ph)}</code>", page_tag="login_send")
+            await panel(f"📡 در حال ارسال کد...\n<code>{esc(ph)}</code>", page_tag="login_send")
             try: res = await soroosh_send_code(ph)
             except Exception as e: res = {"ok": False, "status": _fmt_error(e)}
             if not res.get("ok"):
                 clear_conv(cid)
                 return await panel(f"❌ <code>{esc(str(res.get('status'))[:400])}</code>",
-                                   kb_([B(T("add_account"), "acc:add")], [B(T("back_to_panel"), "menu:main")]),
-                                   page_tag="main")
+                                   kb_([B(T("add_account"), "acc:add")], [B(T("back_to_panel"), "menu:main")]), page_tag="main")
             a["step"] = "login_code"; STATE["conv"][cid] = {"acc": a}
-            return await panel(f"✅ <code>{esc(ph)}</code>", page_tag="login_code")
+            return await panel(f"📨 کد تایید ارسال شد، لطفاً وارد کنید:\n<code>{esc(ph)}</code>\n\n<i>کد ارسال‌شده به سروش را در همین چت بفرست</i>", page_tag="login_code")
 
 _on_message_orig = _on_message_impl
 async def on_message(update, context):
@@ -4971,8 +4982,7 @@ async def route_cb(cid, data):
     if data == "menu:cfg": return await show_cfg()
 
     if data == "cfg:lang":
-        cur = _get_lang(); new = "en" if cur == "fa" else "fa"
-        _set_lang(new)
+        cur = _get_lang(); new = "en" if cur == "fa" else "fa"; _set_lang(new)
         await tg_send(("🌐 " + T("cfg_lang_en")) if new == "en" else ("🌐 " + T("cfg_lang_fa")))
         return await show_main()
 
@@ -4983,13 +4993,9 @@ async def route_cb(cid, data):
             if not act: return await show_cache_account(aid)
             if act == "clear_seen": _clear_seen(aid); await tg_send("🗑"); return await show_cache_account(aid)
             if act == "clear_banned": _clear_banned(aid); await tg_send("🗑"); return await show_cache_account(aid)
-            if act == "clear_all":
-                _clear_seen(aid); _clear_banned(aid); await tg_send("🗑")
-                return await show_cache_account(aid)
+            if act == "clear_all": _clear_seen(aid); _clear_banned(aid); await tg_send("🗑"); return await show_cache_account(aid)
             if act == "reset_ld": _reset_ld_progress(aid); await tg_send("🔄"); return await show_cache_account(aid)
-        if sub == "clear_all_accounts":
-            _clear_seen(); _clear_banned(); _reset_ld_progress()
-            await tg_send("🗑"); return await show_cache_menu()
+        if sub == "clear_all_accounts": _clear_seen(); _clear_banned(); _reset_ld_progress(); await tg_send("🗑"); return await show_cache_menu()
 
     if h == "pv":
         sub = p[1] if len(p) > 1 else ""
@@ -4998,143 +5004,95 @@ async def route_cb(cid, data):
             if not act: return await show_pv_account_menu(aid)
             cfg = _load_pv_account(aid)
             if act == "toggle":
-                cfg["enabled"] = not bool(cfg.get("enabled"))
-                _save_pv_account(aid, cfg)
+                cfg["enabled"] = not bool(cfg.get("enabled")); _save_pv_account(aid, cfg)
                 if cfg["enabled"]:
                     existing = PV_LISTENER_TASKS.get(aid)
                     if not existing or existing.done():
                         acc = get_account(aid)
                         if acc:
-                            stop = asyncio.Event()
-                            _PV_STOP_EVENTS[aid] = stop
-                            t = asyncio.create_task(_pv_poller_worker(aid, acc, stop))
-                            PV_LISTENER_TASKS[aid] = t
-                else:
-                    _stop_pv_for_account(aid)
+                            stop = asyncio.Event(); _PV_STOP_EVENTS[aid] = stop
+                            t = asyncio.create_task(_pv_poller_worker(aid, acc, stop)); PV_LISTENER_TASKS[aid] = t
+                else: _stop_pv_for_account(aid)
                 return await show_pv_account_menu(aid)
             if act == "cycle_max":
-                seq = [1, 2, 3, 5, 0]
-                cur = int(cfg.get("max_replies", 1) or 0)
+                seq = [1, 2, 3, 5, 0]; cur = int(cfg.get("max_replies", 1) or 0)
                 cfg["max_replies"] = seq[(seq.index(cur) + 1) % len(seq)] if cur in seq else 1
                 _save_pv_account(aid, cfg); return await show_pv_account_menu(aid)
-            if act == "set_delay":
-                get_conv(cid)["pv_acc_wait"] = {"aid": aid, "kind": "delay"}
-                return await ask(T("pv_delay_q"))
-            if act == "set_poll":
-                get_conv(cid)["pv_acc_wait"] = {"aid": aid, "kind": "poll"}
-                return await ask(T("pv_poll_q"))
-            if act == "toggle_notify":
-                cfg["notify"] = not bool(cfg.get("notify", True))
-                _save_pv_account(aid, cfg); return await show_pv_account_menu(aid)
-            if act == "add_text":
-                get_conv(cid)["pv_acc_wait"] = {"aid": aid, "kind": "add_text"}
-                return await ask(T("pv_text_q"))
-            if act == "add_saved":
-                get_conv(cid)["pv_acc_save_msg"] = {"aid": aid}
-                return await ask(T("pv_file_q"))
-            if act == "add_delay":
-                get_conv(cid)["pv_acc_wait"] = {"aid": aid, "kind": "add_delay_sec"}
-                return await ask(T("pv_delaysec_q"))
+            if act == "set_delay": get_conv(cid)["pv_acc_wait"] = {"aid": aid, "kind": "delay"}; return await ask(T("pv_delay_q"))
+            if act == "set_poll": get_conv(cid)["pv_acc_wait"] = {"aid": aid, "kind": "poll"}; return await ask(T("pv_poll_q"))
+            if act == "toggle_notify": cfg["notify"] = not bool(cfg.get("notify", True)); _save_pv_account(aid, cfg); return await show_pv_account_menu(aid)
+            if act == "add_text": get_conv(cid)["pv_acc_wait"] = {"aid": aid, "kind": "add_text"}; return await ask(T("pv_text_q"))
+            if act == "add_saved": get_conv(cid)["pv_acc_save_msg"] = {"aid": aid}; return await ask(T("pv_file_q"))
+            if act == "add_delay": get_conv(cid)["pv_acc_wait"] = {"aid": aid, "kind": "add_delay_sec"}; return await ask(T("pv_delaysec_q"))
             if act == "list": return await show_pv_account_list(aid)
             if act == "del" and len(p) >= 5:
                 try: i = int(p[4])
-                except: return await show_pv_account_list(aid)
+                except Exception: return await show_pv_account_list(aid)
                 items = cfg.get("items") or []
                 if 0 <= i < len(items): items.pop(i)
-                cfg["items"] = items; _save_pv_account(aid, cfg)
-                await tg_send("🗑"); return await show_pv_account_list(aid)
+                cfg["items"] = items; _save_pv_account(aid, cfg); await tg_send("🗑"); return await show_pv_account_list(aid)
             if act == "clear_replies":
-                try:
-                    d = _load(PV_COUNTS_FILE, {}); d.pop(aid, None); _save(PV_COUNTS_FILE, d)
-                except Exception: pass
-                try:
-                    w = _wm_load(); w.pop(aid, None); _wm_flush()
-                except Exception: pass
-                await tg_send("🧹"); return await show_pv_account_menu(aid)
-            if act == "reset_to_global":
-                _delete_pv_account(aid); await tg_send("♻️")
-                return await show_pv_account_menu(aid)
+                d = _load(PV_COUNTS_FILE, {}); d.pop(aid, None); _save(PV_COUNTS_FILE, d)
+                w = _wm_load(); w.pop(aid, None); _wm_flush(); await tg_send("🧹"); return await show_pv_account_menu(aid)
+            if act == "reset_to_global": _delete_pv_account(aid); await tg_send("♻️"); return await show_pv_account_menu(aid)
             if act == "restart":
-                _stop_pv_for_account(aid)
-                await asyncio.sleep(0.5)
+                _stop_pv_for_account(aid); await asyncio.sleep(0.5)
                 cfg2 = _load_pv_account(aid)
                 if cfg2.get("enabled"):
                     acc = get_account(aid)
                     if acc:
-                        stop = asyncio.Event()
-                        _PV_STOP_EVENTS[aid] = stop
-                        t = asyncio.create_task(_pv_poller_worker(aid, acc, stop))
-                        PV_LISTENER_TASKS[aid] = t
+                        stop = asyncio.Event(); _PV_STOP_EVENTS[aid] = stop
+                        t = asyncio.create_task(_pv_poller_worker(aid, acc, stop)); PV_LISTENER_TASKS[aid] = t
                 await tg_send("🔄"); return await show_pv_account_menu(aid)
             if act == "report":
                 try: pg = int(p[4]) if len(p) > 4 else 0
-                except: pg = 0
+                except Exception: pg = 0
                 return await show_pv_account_report(aid, pg)
 
     if h == "acc":
         if len(p) >= 5 and p[1] == "at" and p[2] == "run":
             aid = p[3]; tid = p[4]
-            op = {"id": "at_" + secrets.token_hex(5), "created": int(time.time()),
-                  "type": "autotar", "accounts": [aid], "template_id": tid,
-                  "status": "running",
-                  "progress": {"joined":0,"failed":0,"total":0,"pending":0,"in_progress":0,
-                               "phase":T("ph_start"),"sent":0,"already":0,"tried":0,"wave":0,
-                               "left":0,"round":0,"skipped_seen":0,"skipped_banned":0,"rejected":0},
-                  "errors": []}
-            _save_op(op); asyncio.create_task(run_auto_tar(op, log_cb))
-            return await show_op_detail(op["id"])
+            op = {"id": "at_" + secrets.token_hex(5), "created": int(time.time()), "type": "autotar", "accounts": [aid], "template_id": tid, "status": "running",
+                  "progress": {"joined":0,"failed":0,"total":0,"pending":0,"in_progress":0,"phase":T("ph_start"),"sent":0,"already":0,"tried":0,"wave":0,"left":0,"round":0,"skipped_seen":0,"skipped_banned":0,"rejected":0}, "errors": []}
+            _save_op(op); asyncio.create_task(run_auto_tar(op, log_cb)); return await show_op_detail(op["id"])
         if len(p) >= 3 and p[1] == "at": return await show_acc_at_menu(p[2])
         sub = p[1] if len(p) > 1 else ""
         if sub == "page": return await show_accounts(int(p[2]))
         if sub == "refresh":
             for aid in list(_STATS_CACHE.keys()): _STATS_CACHE.pop(aid, None)
-            await tg_send(f"🔄 {T('refresh_stats')}")
-            return await show_accounts()
+            await tg_send(f"🔄 {T('refresh_stats')}"); return await show_accounts()
         if sub == "refresh_one" and len(p) >= 3:
-            _STATS_CACHE.pop(p[2], None)
-            await tg_send(f"🔄 {T('refresh_stats')}")
+            _STATS_CACHE.pop(p[2], None); await tg_send(f"🔄 {T('refresh_stats')}")
             try: await asyncio.wait_for(get_account_stats(p[2], force=True), timeout=20)
             except Exception: pass
             return await show_account_detail(p[2])
-        if sub == "add":
-            get_conv(cid)["acc"] = {"step": "phone"}
-            return await ask(T("add_account_q"))
+        if sub == "add": get_conv(cid)["acc"] = {"step": "phone"}; return await ask(T("add_account_q"))
         if sub == "view": return await show_account_detail(p[2])
         if sub == "del":
             a = get_account(p[2])
             if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
-            return await panel(T("acc_delete_q", n=esc(a.get('name','?'))),
-                               kb_([B(T("yes"), f"acc:delok:{p[2]}"), B(T("no"), f"acc:view:{p[2]}")]),
-                               page_tag=f"acc_del:{p[2]}")
+            return await panel(T("acc_delete_q", n=esc(a.get('name','?'))), kb_([B(T("yes"), f"acc:delok:{p[2]}"), B(T("no"), f"acc:view:{p[2]}")]), page_tag=f"acc_del:{p[2]}")
         if sub == "delok":
             _stop_listener_for(p[2])
             try: _stop_pv_for_account(p[2])
             except Exception: pass
-            remove_account(p[2]); await tg_send("🗑")
-            return await show_accounts()
+            remove_account(p[2]); await tg_send("🗑"); return await show_accounts()
         if sub == "lf" and len(p) >= 5 and p[3] == "go":
             aid = p[2]; mode = p[4]
-            op = {"id": "lf_" + secrets.token_hex(5), "created": int(time.time()),
-                  "type": "lefter", "accounts": [aid], "leave_mode": mode, "delay": 0.8,
-                  "status": "running",
-                  "progress": {"joined":0,"failed":0,"total":0,"phase":T("ph_start")},
-                  "errors": []}
-            _save_op(op); asyncio.create_task(run_lefter(op, log_cb))
-            return await show_op_detail(op["id"])
+            op = {"id": "lf_" + secrets.token_hex(5), "created": int(time.time()), "type": "lefter", "accounts": [aid], "leave_mode": mode, "delay": 0.8, "status": "running", "progress": {"joined":0,"failed":0,"total":0,"phase":T("ph_start")}, "errors": []}
+            _save_op(op); asyncio.create_task(run_lefter(op, log_cb)); return await show_op_detail(op["id"])
         if sub == "lf" and len(p) >= 3: return await show_acc_lf(p[2])
 
     if h == "accphoto":
         sub = p[1] if len(p) > 1 else ""
         if sub == "menu" and len(p) >= 3: return await show_acc_photo_menu(p[2])
-        if sub == "set" and len(p) >= 3:
-            get_conv(cid)["accphoto_upload"] = {"aid": p[2]}
-            return await ask(T("prof_send_photo"))
+        if sub == "set" and len(p) >= 3: get_conv(cid)["accphoto_upload"] = {"aid": p[2]}; return await ask(T("prof_send_photo"))
         if sub == "del" and len(p) >= 3:
-            aid = p[2]
-            a = get_account(aid)
+            aid = p[2]; a = get_account(aid)
             if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
             await panel(f"⏳ {T('prof_deleting')}", page_tag=f"accphoto:{aid}")
-            cli = None; ok = False; msg_r = ""
+            ok = False; msg_r = ""
+            cli = None
             try:
                 cli, err = await _connect_with_retry(aid, a["session_string"], name=a.get("name"), tries=3)
                 if cli: ok, msg_r = await soroosh_delete_profile_photos(cli)
@@ -5143,22 +5101,18 @@ async def route_cb(cid, data):
                 if cli:
                     try: await cli._disconnect()
                     except Exception: pass
-            await tg_send("✅" if ok else f"❌ {msg_r[:150]}")
-            return await show_acc_photo_menu(aid)
+            await tg_send("✅" if ok else f"❌ {msg_r[:150]}"); return await show_acc_photo_menu(aid)
 
     if h == "chphoto":
         sub = p[1] if len(p) > 1 else ""
         if sub == "menu" and len(p) >= 4: return await show_ch_photo_menu(p[2], int(p[3]))
-        if sub == "set" and len(p) >= 4:
-            get_conv(cid)["chphoto_upload"] = {"aid": p[2], "idx": int(p[3])}
-            return await ask(T("prof_send_photo"))
+        if sub == "set" and len(p) >= 4: get_conv(cid)["chphoto_upload"] = {"aid": p[2], "idx": int(p[3])}; return await ask(T("prof_send_photo"))
         if sub == "del" and len(p) >= 4:
-            aid = p[2]; idx = int(p[3])
-            a = get_account(aid); chs = get_stored_channels(aid)
+            aid = p[2]; idx = int(p[3]); a = get_account(aid); chs = get_stored_channels(aid)
             if not a or idx >= len(chs): return await panel(T("not_found"), kb_(nav()), page_tag="main")
             ch = chs[idx]
             await panel(f"⏳ {T('prof_deleting')}", page_tag=f"chphoto:{aid}:{idx}")
-            cli = None; ok = False; msg_r = ""
+            ok = False; msg_r = ""; cli = None
             try:
                 cli, err = await _connect_with_retry(aid, a["session_string"], name=a.get("name"), tries=3)
                 if cli:
@@ -5170,22 +5124,16 @@ async def route_cb(cid, data):
                 if cli:
                     try: await cli._disconnect()
                     except Exception: pass
-            await tg_send("✅" if ok else f"❌ {msg_r[:150]}")
-            return await show_ch_photo_menu(aid, idx)
+            await tg_send("✅" if ok else f"❌ {msg_r[:150]}"); return await show_ch_photo_menu(aid, idx)
 
     if h == "chfile":
         sub = p[1] if len(p) > 1 else ""
-        if sub == "start" and len(p) >= 4:
-            get_conv(cid)["chfile_upload"] = {"aid": p[2], "idx": int(p[3]), "step": "wait_file"}
-            return await ask(T("ch_file_q"))
+        if sub == "start" and len(p) >= 4: get_conv(cid)["chfile_upload"] = {"aid": p[2], "idx": int(p[3]), "step": "wait_file"}; return await ask(T("ch_file_q"))
 
     if h == "jl":
-        c = get_conv(cid)
-        s = c.get("jl") or {"step": "account", "accounts": [], "max_join": 0, "speed": "fast", "groups_only": True}
-        c["jl"] = s; sub = p[1] if len(p) > 1 else ""
-        if sub == "start":
-            c["jl"] = {"step": "account", "accounts": [], "max_join": 0, "speed": "fast", "groups_only": True}
-            return await jl_step_account(cid, c["jl"])
+        c = get_conv(cid); s = c.get("jl") or {"step": "account", "accounts": [], "max_join": 0, "speed": "fast", "groups_only": True}; c["jl"] = s
+        sub = p[1] if len(p) > 1 else ""
+        if sub == "start": c["jl"] = {"step": "account", "accounts": [], "max_join": 0, "speed": "fast", "groups_only": True}; return await jl_step_account(cid, c["jl"])
         if sub == "acc" and len(p) >= 3:
             aid = p[2]; sel = s.setdefault("accounts", [])
             if aid in sel: sel.remove(aid)
@@ -5195,17 +5143,15 @@ async def route_cb(cid, data):
         if sub == "toggle_groups_only": s["groups_only"] = not s.get("groups_only", True); return await jl_step_settings(cid, s)
         if sub == "max" and len(p) >= 3:
             v = p[2]
-            if v == "custom":
-                get_conv(cid)["jl_wait"] = "max"; return await ask(T("jl_max_q"))
+            if v == "custom": get_conv(cid)["jl_wait"] = "max"; return await ask(T("jl_max_q"))
             try: s["max_join"] = int(v)
-            except: pass
+            except Exception: pass
             return await jl_step_max(cid, s)
         if sub == "next":
             if s["step"] == "account":
                 if not s.get("accounts"): return await panel(T("empty"), kb_([B(f"« {T('back')}", "jl:back")]), page_tag="jl:1")
                 s["step"] = "settings"; return await jl_step_settings(cid, s)
-            elif s["step"] == "settings":
-                s["step"] = "max"; return await jl_step_max(cid, s)
+            elif s["step"] == "settings": s["step"] = "max"; return await jl_step_max(cid, s)
         if sub == "back":
             if s["step"] == "settings": s["step"] = "account"
             elif s["step"] == "max": s["step"] = "settings"
@@ -5216,31 +5162,17 @@ async def route_cb(cid, data):
         if sub == "go":
             if not s.get("max_join"): return await panel(T("empty"), kb_([B(f"« {T('back')}", "jl:back")]), page_tag="jl:3")
             if not s.get("accounts"): return await panel(T("empty"), kb_([B(f"« {T('back')}", "jl:back")]), page_tag="jl:1")
-            speed_map = {"ultra": 0.3, "fast": 1.0, "normal": 3.0, "slow": 8.0}
-            spd = s.get("speed", "fast"); cfg = _load(CFG_FILE, DEFAULT_CFG)
-            op = {"id": "jl_" + secrets.token_hex(5), "created": int(time.time()),
-                  "type": "joinlef", "accounts": s.get("accounts") or [],
-                  "max_join": s.get("max_join", 0), "status": "running", "speed": spd,
-                  "join_delay": speed_map.get(spd, 1.0),
-                  "groups_only": bool(s.get("groups_only", True)),
-                  "wave_size": int(cfg.get("wave_size", 50)),
-                  "extract_limit": int(cfg.get("extract_limit", 300)),
-                  "link_donies": list(load_link_donies()),
-                  "progress": {"joined":0,"failed":0,"total":0,"phase":T("ph_start"),
-                               "skipped_seen":0,"skipped_banned":0,"rejected":0,
-                               "already":0,"sent":0,"wave":0,"tried":0,"left":0,"round":0},
-                  "errors": []}
+            speed_map = {"ultra": 0.3, "fast": 1.0, "normal": 3.0, "slow": 8.0}; spd = s.get("speed", "fast"); cfg = _load(CFG_FILE, DEFAULT_CFG)
+            op = {"id": "jl_" + secrets.token_hex(5), "created": int(time.time()), "type": "joinlef", "accounts": s.get("accounts") or [], "max_join": s.get("max_join", 0), "status": "running", "speed": spd, "join_delay": speed_map.get(spd, 1.0), "groups_only": bool(s.get("groups_only", True)), "wave_size": int(cfg.get("wave_size", 50)), "extract_limit": int(cfg.get("extract_limit", 300)), "link_donies": list(load_link_donies()),
+                  "progress": {"joined":0,"failed":0,"total":0,"phase":T("ph_start"),"skipped_seen":0,"skipped_banned":0,"rejected":0,"already":0,"sent":0,"wave":0,"tried":0,"left":0,"round":0}, "errors": []}
             _save_op(op); c.pop("jl", None)
             JL_JOBS[op["id"]] = asyncio.create_task(run_joiner_lefter(op, log_cb))
             return await show_op_detail(op["id"])
 
     if h == "lf":
-        c = get_conv(cid)
-        s = c.get("lf") or {"step": "account", "accounts": [], "mode": "all", "delay": 0.8}
-        c["lf"] = s; sub = p[1] if len(p) > 1 else ""
-        if sub == "start":
-            c["lf"] = {"step": "account", "accounts": [], "mode": "all", "delay": 0.8}
-            return await lf_step_account(cid, c["lf"])
+        c = get_conv(cid); s = c.get("lf") or {"step": "account", "accounts": [], "mode": "all", "delay": 0.8}; c["lf"] = s
+        sub = p[1] if len(p) > 1 else ""
+        if sub == "start": c["lf"] = {"step": "account", "accounts": [], "mode": "all", "delay": 0.8}; return await lf_step_account(cid, c["lf"])
         if sub == "acc" and len(p) >= 3:
             aid = p[2]; sel = s.setdefault("accounts", [])
             if aid in sel: sel.remove(aid)
@@ -5249,14 +5181,13 @@ async def route_cb(cid, data):
         if sub == "mode" and len(p) >= 3: s["mode"] = p[2]; return await lf_step_mode(cid, s)
         if sub == "delay" and len(p) >= 3:
             try: s["delay"] = float(p[2])
-            except: s["delay"] = 0.8
+            except Exception: s["delay"] = 0.8
             return await lf_step_delay(cid, s)
         if sub == "next":
             if s["step"] == "account":
                 if not s.get("accounts"): return await panel(T("empty"), kb_([B(f"« {T('back')}", "lf:back")]), page_tag="lf:1")
                 s["step"] = "mode"; return await lf_step_mode(cid, s)
-            elif s["step"] == "mode":
-                s["step"] = "delay"; return await lf_step_delay(cid, s)
+            elif s["step"] == "mode": s["step"] = "delay"; return await lf_step_delay(cid, s)
         if sub == "back":
             if s["step"] == "mode": s["step"] = "account"
             elif s["step"] == "delay": s["step"] = "mode"
@@ -5264,12 +5195,7 @@ async def route_cb(cid, data):
         if sub == "cancel": c.pop("lf", None); return await show_main()
         if sub == "go":
             if not s.get("accounts"): return await panel(T("empty"), kb_([B(f"« {T('back')}", "lf:back")]), page_tag="lf:1")
-            op = {"id": "lf_" + secrets.token_hex(5), "created": int(time.time()),
-                  "type": "lefter", "accounts": s.get("accounts") or [],
-                  "leave_mode": s.get("mode", "all"), "delay": s.get("delay", 0.8),
-                  "status": "running",
-                  "progress": {"joined":0,"failed":0,"total":0,"phase":T("ph_start")},
-                  "errors": []}
+            op = {"id": "lf_" + secrets.token_hex(5), "created": int(time.time()), "type": "lefter", "accounts": s.get("accounts") or [], "leave_mode": s.get("mode", "all"), "delay": s.get("delay", 0.8), "status": "running", "progress": {"joined":0,"failed":0,"total":0,"phase":T("ph_start")}, "errors": []}
             _save_op(op); c.pop("lf", None)
             asyncio.create_task(run_lefter(op, log_cb))
             return await show_op_detail(op["id"])
@@ -5277,21 +5203,16 @@ async def route_cb(cid, data):
     if h == "at":
         if data == "at:menu": return await show_at_menu()
         if data == "at:new":
-            tpl = new_template("قالب " + secrets.token_hex(2))
-            add_template(tpl); return await show_at_view(tpl["id"])
+            tpl = new_template(); add_template(tpl); return await show_at_view(tpl["id"])
         if len(p) >= 3 and p[1].startswith("tp_"):
             tid = p[1]; act = p[2]
             if act == "view": return await show_at_view(tid)
             if act == "del":
                 t = get_template(tid)
                 if not t: return await show_at_menu()
-                return await panel(T("at_delete_q", n=esc(t.get('name','?'))),
-                                   kb_([B(T("yes"), f"at:{tid}:delok"), B(T("no"), f"at:{tid}:view")]),
-                                   page_tag=f"at:{tid}:view")
+                return await panel(T("at_delete_q", n=esc(t.get('name','?'))), kb_([B(T("yes"), f"at:{tid}:delok"), B(T("no"), f"at:{tid}:view")]), page_tag=f"at:{tid}:view")
             if act == "delok": delete_template(tid); await tg_send("🗑"); return await show_at_menu()
-            if act == "rename":
-                _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "meta", "field": "name"}
-                return await ask(T("at_rename_q"))
+            if act == "rename": _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "meta", "field": "name"}; return await ask(T("at_rename_q"))
             if act == "ch": return await show_at_channel(tid)
             if act == "pr": return await show_at_profile(tid)
             if act == "jn": return await show_at_joiner(tid)
@@ -5299,62 +5220,60 @@ async def route_cb(cid, data):
             if act == "pv": return await show_at_pv(tid)
             if act == "lf": return await show_at_lefter(tid)
             if act == "snmode": return await show_at_sender_mode(tid)
-            if act == "chtype" and len(p) >= 4:
-                update_template(tid, "channel", "type", p[3]); return await show_at_channel(tid)
+            if act == "chtype" and len(p) >= 4: update_template(tid, "channel", "type", p[3]); return await show_at_channel(tid)
             if act == "chset" and len(p) >= 4:
                 field = p[3]
-                if field == "photo_file":
-                    get_conv(cid)["at_field_photo"] = {"tid": tid, "section": "channel", "field": "photo_file"}
-                    return await ask(T("ch_photo_menu"))
+                if field == "photo_file": get_conv(cid)["at_field_photo"] = {"tid": tid, "section": "channel", "field": "photo_file"}; return await ask(T("ch_photo_menu"))
                 _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "channel", "field": field}
                 prompts = {"title": T("channel_title"), "username": T("username"), "about": T("about")}
                 return await ask(prompts.get(field, T("enter")))
+            if act == "chmsg":
+                if len(p) < 4: return await show_at_channel(tid)
+                sub_act = p[3]
+                if sub_act == "list": return await show_at_chmsg_list(tid)
+                if sub_act == "add_text": get_conv(cid)["at_chmsg_text"] = {"tid": tid}; return await ask(T("at_init_q"))
+                if sub_act == "add_file": get_conv(cid)["at_chmsg_file"] = {"tid": tid}; return await ask(T("at_init_file_q"))
+                if sub_act == "del" and len(p) >= 5:
+                    try: i = int(p[4])
+                    except Exception: return await show_at_chmsg_list(tid)
+                    t = get_template(tid); ch = (t or {}).get("channel") or {}
+                    msgs = ch.get("initial_messages") or []
+                    if 0 <= i < len(msgs): msgs.pop(i)
+                    update_template(tid, "channel", "initial_messages", msgs)
+                    await tg_send("🗑"); return await show_at_chmsg_list(tid)
+                return await show_at_channel(tid)
             if act == "prset" and len(p) >= 4:
                 field = p[3]
-                if field == "photo_file":
-                    get_conv(cid)["at_field_photo"] = {"tid": tid, "section": "profile", "field": "photo_file"}
-                    return await ask(T("prof_photo_menu"))
+                if field == "photo_file": get_conv(cid)["at_field_photo"] = {"tid": tid, "section": "profile", "field": "photo_file"}; return await ask(T("prof_photo_menu"))
                 _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "profile", "field": field}
-                prompts = {"first_name": T("prof_first_q"), "last_name": T("prof_last_q"),
-                           "username": T("prof_user_q"), "bio": T("prof_bio_q")}
+                prompts = {"first_name": T("prof_first_q"), "last_name": T("prof_last_q"), "username": T("prof_user_q"), "bio": T("prof_bio_q")}
                 return await ask(prompts.get(field, T("enter")))
-            if act == "jnset" and len(p) >= 4:
-                _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "joiner", "field": p[3]}
-                return await ask(T("jl_max"))
-            if act == "jnspeed" and len(p) >= 4:
-                update_template(tid, "joiner", "speed", p[3]); return await show_at_joiner(tid)
+            if act == "jnset" and len(p) >= 4: _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "joiner", "field": p[3]}; return await ask(T("jl_max"))
+            if act == "jnspeed" and len(p) >= 4: update_template(tid, "joiner", "speed", p[3]); return await show_at_joiner(tid)
             if act == "jntoggle_groups_only":
                 t = get_template(tid)
-                if t: update_template(tid, "joiner", "groups_only",
-                                       not bool(t.get("joiner", {}).get("groups_only", True)))
+                if t: update_template(tid, "joiner", "groups_only", not bool(t.get("joiner", {}).get("groups_only", True)))
                 return await show_at_joiner(tid)
             if act == "snset" and len(p) >= 4:
-                field = p[3]
-                _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "sender", "field": field}
+                field = p[3]; _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "sender", "field": field}
                 prompts = {"text": T("text"), "target": T("target"), "max_send": T("max"), "delay": T("delay")}
                 return await ask(prompts.get(field, T("enter")))
-            if act == "snmode_set" and len(p) >= 4:
-                update_template(tid, "sender", "mode", p[3]); return await show_at_sender(tid)
+            if act == "snmode_set" and len(p) >= 4: update_template(tid, "sender", "mode", p[3]); return await show_at_sender(tid)
             if act == "sntoggle_loop":
                 t = get_template(tid)
                 if t:
-                    snd = t.setdefault("sender", {})
-                    snd["infinite_loop"] = not bool(snd.get("infinite_loop", False))
+                    snd = t.setdefault("sender", {}); snd["infinite_loop"] = not bool(snd.get("infinite_loop", False))
                     ts = list_templates(); ts[tid] = t; save_templates(ts)
                 return await show_at_sender(tid)
             if act == "sntoggle_rescan":
                 t = get_template(tid)
                 if t:
-                    snd = t.setdefault("sender", {})
-                    snd["rescan_targets"] = not bool(snd.get("rescan_targets", True))
+                    snd = t.setdefault("sender", {}); snd["rescan_targets"] = not bool(snd.get("rescan_targets", True))
                     ts = list_templates(); ts[tid] = t; save_templates(ts)
                 return await show_at_sender(tid)
-            if act == "snset_loop_delay":
-                _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "sender", "field": "loop_delay"}
-                return await ask(T("send_loop_q"))
+            if act == "snset_loop_delay": _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "sender", "field": "loop_delay"}; return await ask(T("send_loop_q"))
             if act == "snedit" and len(p) >= 4:
-                sub_act = p[3]
-                ts = list_templates(); t2 = ts.get(tid)
+                sub_act = p[3]; ts = list_templates(); t2 = ts.get(tid)
                 if sub_act in ("toggle", "ph_rand", "multi_toggle"):
                     if t2:
                         snd2 = t2.setdefault("sender", {})
@@ -5363,70 +5282,40 @@ async def route_cb(cid, data):
                         elif sub_act == "multi_toggle": snd2["multi_step_edit"] = not bool(snd2.get("multi_step_edit", False))
                         save_templates(ts)
                     return await show_at_sender(tid)
-                if sub_act == "sec":
-                    _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "sender_edit", "field": "edit_delay_seconds"}
-                    return await ask(T("send_edit_q"))
-                if sub_act == "ph":
-                    _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "sender_edit", "field": "placeholder_text"}
-                    return await ask(T("send_ph_q"))
-                if sub_act == "file":
-                    get_conv(cid)["at_field_photo"] = {"tid": tid, "section": "sender_edit", "field": "attach_file"}
-                    return await ask(T("send_attach_q"))
+                if sub_act == "sec": _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "sender_edit", "field": "edit_delay_seconds"}; return await ask(T("send_edit_q"))
+                if sub_act == "ph": _TMP_EDIT[cid] = {"kind": "at_field", "tid": tid, "section": "sender_edit", "field": "placeholder_text"}; return await ask(T("send_ph_q"))
+                if sub_act == "file": get_conv(cid)["at_field_photo"] = {"tid": tid, "section": "sender_edit", "field": "attach_file"}; return await ask(T("send_attach_q"))
             if act == "pv" and len(p) >= 4:
-                sub_act = p[3]
-                t2 = get_template(tid)
+                sub_act = p[3]; t2 = get_template(tid)
                 if not t2: return await show_at_menu()
                 pv2 = t2.setdefault("pv", {}); items = pv2.get("items") or []
-                if sub_act == "toggle":
-                    pv2["enabled"] = not bool(pv2.get("enabled", False))
-                    update_template(tid, "pv", "enabled", pv2["enabled"]); return await show_at_pv(tid)
+                if sub_act == "toggle": pv2["enabled"] = not bool(pv2.get("enabled", False)); update_template(tid, "pv", "enabled", pv2["enabled"]); return await show_at_pv(tid)
                 if sub_act == "cycle_max":
-                    seq = [1, 2, 3, 5, 0]; cur = int(pv2.get("max_replies", 1) or 0)
-                    nv = seq[(seq.index(cur) + 1) % len(seq)] if cur in seq else 1
+                    seq = [1, 2, 3, 5, 0]; cur = int(pv2.get("max_replies", 1) or 0); nv = seq[(seq.index(cur) + 1) % len(seq)] if cur in seq else 1
                     update_template(tid, "pv", "max_replies", nv); return await show_at_pv(tid)
-                if sub_act == "set_delay":
-                    get_conv(cid)["pv_tpl_wait"] = {"tid": tid, "kind": "delay"}
-                    return await ask(T("pv_delay_q"))
-                if sub_act == "toggle_apply":
-                    update_template(tid, "pv", "apply_to_accounts", not bool(pv2.get("apply_to_accounts", True)))
-                    return await show_at_pv(tid)
-                if sub_act == "add_text":
-                    get_conv(cid)["pv_tpl_wait"] = {"tid": tid, "kind": "add_text"}
-                    return await ask(T("pv_text_q"))
-                if sub_act == "add_saved":
-                    get_conv(cid)["pv_tpl_save_msg"] = {"tid": tid}
-                    return await ask(T("pv_file_q"))
-                if sub_act == "add_delay":
-                    get_conv(cid)["pv_tpl_wait"] = {"tid": tid, "kind": "add_delay_sec"}
-                    return await ask(T("pv_delaysec_q"))
+                if sub_act == "set_delay": get_conv(cid)["pv_tpl_wait"] = {"tid": tid, "kind": "delay"}; return await ask(T("pv_delay_q"))
+                if sub_act == "toggle_apply": update_template(tid, "pv", "apply_to_accounts", not bool(pv2.get("apply_to_accounts", True))); return await show_at_pv(tid)
+                if sub_act == "add_text": get_conv(cid)["pv_tpl_wait"] = {"tid": tid, "kind": "add_text"}; return await ask(T("pv_text_q"))
+                if sub_act == "add_saved": get_conv(cid)["pv_tpl_save_msg"] = {"tid": tid}; return await ask(T("pv_file_q"))
+                if sub_act == "add_delay": get_conv(cid)["pv_tpl_wait"] = {"tid": tid, "kind": "add_delay_sec"}; return await ask(T("pv_delaysec_q"))
                 if sub_act == "list": return await show_at_pv_list(tid)
                 if sub_act == "del" and len(p) >= 5:
                     try: i = int(p[4])
-                    except: return await show_at_pv_list(tid)
+                    except Exception: return await show_at_pv_list(tid)
                     if 0 <= i < len(items): items.pop(i)
-                    update_template(tid, "pv", "items", items)
-                    await tg_send("🗑"); return await show_at_pv_list(tid)
-            if act == "lfset" and len(p) >= 4:
-                update_template(tid, "lefter", "leave_mode", p[3]); return await show_at_lefter(tid)
+                    update_template(tid, "pv", "items", items); await tg_send("🗑"); return await show_at_pv_list(tid)
+            if act == "lfset" and len(p) >= 4: update_template(tid, "lefter", "leave_mode", p[3]); return await show_at_lefter(tid)
             if act == "run": return await show_at_run(tid)
             if act == "run_acc" and len(p) >= 4:
-                aid = p[3]
-                c = get_conv(cid); ar = c.setdefault("at_run", {"template_id": tid, "accounts": []})
-                sel = ar.setdefault("accounts", [])
+                aid = p[3]; c = get_conv(cid); ar = c.setdefault("at_run", {"template_id": tid, "accounts": []}); sel = ar.setdefault("accounts", [])
                 if aid in sel: sel.remove(aid)
                 else: sel.append(aid)
                 return await show_at_run(tid)
             if act == "run_go":
-                c = get_conv(cid); ar = c.get("at_run") or {}
-                sel = ar.get("accounts") or []
+                c = get_conv(cid); ar = c.get("at_run") or {}; sel = ar.get("accounts") or []
                 if not sel: return await panel(T("empty"), kb_(nav(f"at:{tid}:view")), page_tag=f"at:{tid}:run:0")
-                op = {"id": "at_" + secrets.token_hex(5), "created": int(time.time()),
-                      "type": "autotar", "accounts": sel, "template_id": tid,
-                      "status": "running",
-                      "progress": {"joined":0,"failed":0,"total":0,"pending":0,"in_progress":0,
-                                   "phase":T("ph_start"),"sent":0,"already":0,"tried":0,"wave":0,
-                                   "left":0,"round":0,"skipped_seen":0,"skipped_banned":0,"rejected":0},
-                      "errors": []}
+                op = {"id": "at_" + secrets.token_hex(5), "created": int(time.time()), "type": "autotar", "accounts": sel, "template_id": tid, "status": "running",
+                      "progress": {"joined":0,"failed":0,"total":0,"pending":0,"in_progress":0,"phase":T("ph_start"),"sent":0,"already":0,"tried":0,"wave":0,"left":0,"round":0,"skipped_seen":0,"skipped_banned":0,"rejected":0}, "errors": []}
                 _save_op(op); c.pop("at_run", None)
                 asyncio.create_task(run_auto_tar(op, log_cb))
                 return await show_op_detail(op["id"])
@@ -5441,38 +5330,22 @@ async def route_cb(cid, data):
             await panel(f"⏳ {T('ch_link_fetch')}", page_tag=f"chview:{aid}:{idx}")
             ok, res = await export_invite_link(aid, idx)
             if ok:
-                return await panel(head("🔗", "link_sent") + f"\n\n<code>{esc(res)}</code>",
-                                   kb_([B(f"🔄 {T('get_link')}", f"ch:getlink:{aid}:{idx}")],
-                                       [B(f"✍️ {T('set_link')}", f"ch:setlink:{aid}:{idx}")],
-                                       [B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]),
-                                   page_tag=f"chview:{aid}:{idx}")
-            return await panel(f"❌ {esc(str(res)[:400])}",
-                               kb_([B(f"✍️ {T('set_link')}", f"ch:setlink:{aid}:{idx}")],
-                                   [B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]),
-                               page_tag=f"chview:{aid}:{idx}")
-        if sub == "setlink" and len(p) >= 4:
-            aid = p[2]; idx = int(p[3])
-            get_conv(cid)["setlink"] = {"aid": aid, "idx": idx}
-            return await ask(T("ch_link_q"))
+                return await panel(head("🔗", "link_sent") + f"\n\n<code>{esc(res)}</code>", kb_([B(f"🔄 {T('get_link')}", f"ch:getlink:{aid}:{idx}")], [B(f"✍️ {T('set_link')}", f"ch:setlink:{aid}:{idx}")], [B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
+            return await panel(f"❌ {esc(str(res)[:400])}", kb_([B(f"✍️ {T('set_link')}", f"ch:setlink:{aid}:{idx}")], [B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
+        if sub == "setlink" and len(p) >= 4: get_conv(cid)["setlink"] = {"aid": p[2], "idx": int(p[3])}; return await ask(T("ch_link_q"))
         if sub == "diag" and len(p) >= 4:
             aid = p[2]; idx = int(p[3])
             await panel(f"⏳ {T('loading')}", page_tag=f"chview:{aid}:{idx}")
             try: dump = await diagnose_channel(aid, idx)
             except Exception as e: dump = f"ERR: {e}"
-            return await panel(head("🔍", "debug") + f"\n<pre>{esc(dump[:3500])}</pre>",
-                               kb_([B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
+            return await panel(head("🔍", "debug") + f"\n<pre>{esc(dump[:3500])}</pre>", kb_([B(f"« {T('back')}", f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
         if sub == "del" and len(p) >= 4:
-            aid = p[2]; idx = int(p[3])
-            channels = get_stored_channels(aid)
+            aid = p[2]; idx = int(p[3]); channels = get_stored_channels(aid)
             if idx >= len(channels): return await show_ch_list(aid)
-            return await panel(T("ch_delete_q"),
-                               kb_([B(T("yes"), f"ch:delok:{aid}:{idx}"), B(T("no"), f"ch:view:{aid}:{idx}")]),
-                               page_tag=f"chview:{aid}:{idx}")
+            return await panel(T("ch_delete_q"), kb_([B(T("yes"), f"ch:delok:{aid}:{idx}"), B(T("no"), f"ch:view:{aid}:{idx}")]), page_tag=f"chview:{aid}:{idx}")
         if sub == "delok" and len(p) >= 4:
             aid = p[2]; idx = int(p[3])
-            remove_channel_from_storage(aid, idx)
-            await tg_send("🗑")
-            return await show_ch_list(aid)
+            remove_channel_from_storage(aid, idx); await tg_send("🗑"); return await show_ch_list(aid)
 
     if h == "chlist":
         sub = p[1] if len(p) > 1 else ""
@@ -5480,29 +5353,19 @@ async def route_cb(cid, data):
 
     if h == "chsend":
         sub = p[1] if len(p) > 1 else ""
-        if sub == "start" and len(p) >= 4:
-            aid = p[2]; idx = int(p[3])
-            get_conv(cid)["chsend"] = {"aid": aid, "idx": idx, "step": "compose"}
-            return await ask(T("ch_send_q"))
+        if sub == "start" and len(p) >= 4: get_conv(cid)["chsend"] = {"aid": p[2], "idx": int(p[3]), "step": "compose"}; return await ask(T("ch_send_q"))
 
     if h == "chnew":
         sub = p[1] if len(p) > 1 else ""
-        if sub == "start":
-            aid = p[2]
-            get_conv(cid)["chnew"] = {"aid": aid, "step": "title"}
-            return await ask(T("ch_new_name_q"))
+        if sub == "start": get_conv(cid)["chnew"] = {"aid": p[2], "step": "title"}; return await ask(T("ch_new_name_q"))
         if sub == "pub":
-            aid = p[2]; info = get_conv(cid).get("chnew") or {}
-            title = info.get("title")
+            aid = p[2]; info = get_conv(cid).get("chnew") or {}; title = info.get("title")
             if not title: return await panel(T("not_found"), kb_(nav(f"ch:menu:{aid}")), page_tag=f"ch_menu:{aid}")
-            get_conv(cid)["chnew"] = {"aid": aid, "step": "username", "title": title}
-            return await ask(T("ch_new_user_q"))
+            get_conv(cid)["chnew"] = {"aid": aid, "step": "username", "title": title}; return await ask(T("ch_new_user_q"))
         if sub == "priv":
-            aid = p[2]; info = get_conv(cid).get("chnew") or {}
-            title = info.get("title")
+            aid = p[2]; info = get_conv(cid).get("chnew") or {}; title = info.get("title")
             if not title: return await panel(T("not_found"), kb_(nav(f"ch:menu:{aid}")), page_tag=f"ch_menu:{aid}")
-            get_conv(cid).pop("chnew", None)
-            a = get_account(aid); STATE["panel"].pop(cid, None)
+            get_conv(cid).pop("chnew", None); a = get_account(aid); STATE["panel"].pop(cid, None)
             if not a: return await panel(T("not_found"), kb_(nav()), page_tag="main")
             await panel(f"⏳ {T('ch_creating')}", page_tag="chnew_run")
             cli = None; ok = False; msg_r = ""; ch_obj = None
@@ -5520,40 +5383,26 @@ async def route_cb(cid, data):
                 store = _channel_data_from_obj(ch_obj)
                 store["type"] = "private"; store["created"] = int(time.time())
                 add_channel_to_storage(aid, store)
-                return await panel(head("✅", "ch_created") + f"📝 {esc(title)}",
-                                   kb_([B(f"⚙️ {T('my_channels')}", f"chlist:show:{aid}:0")],
-                                       [B(f"« {T('back')}", f"ch:menu:{aid}")]),
-                                   page_tag=f"ch_menu:{aid}")
-            return await panel(f"❌ <code>{esc(str(msg_r)[:300])}</code>",
-                               kb_([B(f"« {T('back')}", f"ch:menu:{aid}")]), page_tag=f"ch_menu:{aid}")
+                return await panel(head("✅", "ch_created") + f"📝 {esc(title)}", kb_([B(f"⚙️ {T('my_channels')}", f"chlist:show:{aid}:0")], [B(f"« {T('back')}", f"ch:menu:{aid}")]), page_tag=f"ch_menu:{aid}")
+            return await panel(f"❌ <code>{esc(str(msg_r)[:300])}</code>", kb_([B(f"« {T('back')}", f"ch:menu:{aid}")]), page_tag=f"ch_menu:{aid}")
 
     if h == "prof":
         sub = p[1] if len(p) > 1 else ""
         if sub == "menu": return await show_profile_menu(p[2])
         if sub == "set":
-            field = p[2]; aid = p[3]
-            get_conv(cid)["prof_field"] = {"field": field, "aid": aid}
-            prompts = {"first": T("prof_first_q"), "last": T("prof_last_q"),
-                       "about": T("prof_bio_q"), "username": T("prof_user_q")}
+            field = p[2]; aid = p[3]; get_conv(cid)["prof_field"] = {"field": field, "aid": aid}
+            prompts = {"first": T("prof_first_q"), "last": T("prof_last_q"), "about": T("prof_bio_q"), "username": T("prof_user_q")}
             return await ask(prompts.get(field, T("enter")))
 
     if h == "ld":
-        sub = p[1] if len(p) > 1 else ""
-        back = p[3] if len(p) > 3 else (p[2] if len(p) > 2 else "jl:back_to_settings")
+        sub = p[1] if len(p) > 1 else ""; back = p[3] if len(p) > 3 else (p[2] if len(p) > 2 else "jl:back_to_settings")
         if sub == "list": return await show_linkdonies(back)
-        if sub == "add":
-            get_conv(cid)["ld_wait"] = "url"; get_conv(cid)["ld_back"] = back
-            return await ask(T("ld_add_q"))
-        if sub == "del" and len(p) >= 3:
-            remove_link_doni(int(p[2])); await tg_send("🗑"); return await show_linkdonies(back)
-        if sub == "reset":
-            save_link_donies(list(DEFAULT_LINK_DONIES)); await tg_send("🔄"); return await show_linkdonies(back)
-        if sub == "reset_prog":
-            _reset_ld_progress(); await tg_send("🔄"); return await show_linkdonies(back)
+        if sub == "add": get_conv(cid)["ld_wait"] = "url"; get_conv(cid)["ld_back"] = back; return await ask(T("ld_add_q"))
+        if sub == "del" and len(p) >= 3: remove_link_doni(int(p[2])); await tg_send("🗑"); return await show_linkdonies(back)
+        if sub == "reset": save_link_donies(list(DEFAULT_LINK_DONIES)); await tg_send("🔄"); return await show_linkdonies(back)
+        if sub == "reset_prog": _reset_ld_progress(); await tg_send("🔄"); return await show_linkdonies(back)
         if sub == "toggle_autojoin":
-            cfg = _load(CFG_FILE, DEFAULT_CFG)
-            cfg["auto_join_linkdoni"] = 0 if int(cfg.get("auto_join_linkdoni", 1)) else 1
-            _save(CFG_FILE, cfg); return await show_linkdonies(back)
+            cfg = _load(CFG_FILE, DEFAULT_CFG); cfg["auto_join_linkdoni"] = 0 if int(cfg.get("auto_join_linkdoni", 1)) else 1; _save(CFG_FILE, cfg); return await show_linkdonies(back)
 
     if h == "err":
         sub = p[1] if len(p) > 1 else ""
@@ -5562,8 +5411,7 @@ async def route_cb(cid, data):
 
     if h == "listen":
         sub = p[1] if len(p) > 1 else ""
-        if sub == "restart":
-            await restart_all_listeners(); await tg_send("🔄"); return await show_listen_menu()
+        if sub == "restart": await restart_all_listeners(); await tg_send("🔄"); return await show_listen_menu()
         if sub == "toggle" and len(p) >= 3:
             aid = p[2]; t = LISTENER_TASKS.get(aid)
             if t and not t.done(): _stop_listener_for(aid); await tg_send("⚪")
@@ -5587,18 +5435,14 @@ async def route_cb(cid, data):
 
     if h == "send":
         s = _send_conv(cid); sub = p[1] if len(p) > 1 else ""
-        if sub == "start":
-            s["step"] = "accounts"; s["accounts"] = s.get("accounts") or []
-            return await show_send_step(cid)
+        if sub == "start": s["step"] = "accounts"; s["accounts"] = s.get("accounts") or []; return await show_send_step(cid)
         if sub == "acc" and len(p) >= 3:
             aid = p[2]; sel = s.setdefault("accounts", [])
             if "all" in sel: sel.remove("all")
             if aid in sel: sel.remove(aid)
             else: sel.append(aid)
             return await show_send_step(cid)
-        if sub == "accall":
-            s["accounts"] = [] if "all" in (s.get("accounts") or []) else ["all"]
-            return await show_send_step(cid)
+        if sub == "accall": s["accounts"] = [] if "all" in (s.get("accounts") or []) else ["all"]; return await show_send_step(cid)
         if sub == "accnext":
             if not s.get("accounts"): return await show_send_step(cid)
             s["step"] = "compose"; return await show_send_step(cid)
@@ -5611,79 +5455,43 @@ async def route_cb(cid, data):
         if sub == "toggle_groups_only": s["groups_only"] = not s.get("groups_only", True); return await show_send_step(cid)
         if sub == "toggle_infinite": s["infinite_loop"] = not s.get("infinite_loop", False); return await show_send_step(cid)
         if sub == "toggle_rescan": s["rescan_targets"] = not s.get("rescan_targets", True); return await show_send_step(cid)
-        if sub == "loop_delay":
-            get_conv(cid)["send_edit_wait"] = "loop_delay"; return await ask(T("send_loop_q"))
+        if sub == "loop_delay": get_conv(cid)["send_edit_wait"] = "loop_delay"; return await ask(T("send_loop_q"))
         if sub == "toggle_edit": s["edit_delay_enabled"] = not s.get("edit_delay_enabled", False); return await show_send_step(cid)
-        if sub == "edit_sec":
-            get_conv(cid)["send_edit_wait"] = "sec"; return await ask(T("send_edit_q"))
-        if sub == "edit_ph":
-            get_conv(cid)["send_edit_wait"] = "ph"; return await ask(T("send_ph_q"))
+        if sub == "edit_sec": get_conv(cid)["send_edit_wait"] = "sec"; return await ask(T("send_edit_q"))
+        if sub == "edit_ph": get_conv(cid)["send_edit_wait"] = "ph"; return await ask(T("send_ph_q"))
         if sub == "toggle_edit_rand": s["edit_delay_random"] = not s.get("edit_delay_random", False); return await show_send_step(cid)
         if sub == "toggle_ph_rand": s["placeholder_random"] = not s.get("placeholder_random", False); return await show_send_step(cid)
         if sub == "toggle_multi": s["multi_step_edit"] = not s.get("multi_step_edit", False); return await show_send_step(cid)
-        if sub == "attach":
-            get_conv(cid)["send_file_upload"] = True
-            return await ask(T("send_attach_q"))
+        if sub == "attach": get_conv(cid)["send_file_upload"] = True; return await ask(T("send_attach_q"))
         if sub == "tgtnext": s["step"] = "max"; return await show_send_step(cid)
         if sub == "max" and len(p) >= 3:
             v = p[2]
-            if v == "custom":
-                get_conv(cid)["send_wait"] = "max"; return await ask(T("send_max_q"))
+            if v == "custom": get_conv(cid)["send_wait"] = "max"; return await ask(T("send_max_q"))
             try: s["max"] = int(v)
-            except: pass
+            except Exception: pass
             return await show_send_step(cid)
         if sub == "maxnext": s["step"] = "confirm"; return await show_send_step(cid)
         if sub == "back": s["step"] = "accounts"; return await show_send_step(cid)
         if sub == "prev":
-            order = ["accounts", "compose", "target", "max", "confirm"]
-            i = order.index(s.get("step", "accounts"))
-            s["step"] = order[max(0, i-1)]; return await show_send_step(cid)
+            order = ["accounts", "compose", "target", "max", "confirm"]; i = order.index(s.get("step", "accounts")); s["step"] = order[max(0, i-1)]
+            return await show_send_step(cid)
         if sub == "back_edit": s["step"] = "accounts"; return await show_send_step(cid)
         if sub == "cancel": clear_conv(cid); return await show_main()
         if sub == "go":
             accounts = list_accounts(); sel = s.get("accounts") or []
             if "all" in sel: sel = list(accounts.keys())
-            op = {"id": "sd_" + secrets.token_hex(5), "created": int(time.time()),
-                  "type": "send", "accounts": sel, "target": s.get("target", "both"),
-                  "max": s.get("max", 0) or 0,
-                  "payload": s.get("payload") or {"text": "سلام"},
-                  "delay": 1.5, "auto_left": bool(s.get("auto_left", False)), "status": "running",
-                  "groups_only": bool(s.get("groups_only", True)),
-                  "attach_file": s.get("attach_file", ""),
-                  "infinite_loop": bool(s.get("infinite_loop", False)),
-                  "loop_delay": float(s.get("loop_delay", 3.0)),
-                  "rescan_targets": bool(s.get("rescan_targets", True)),
-                  "edit_delay_enabled": bool(s.get("edit_delay_enabled", False)),
-                  "edit_delay_seconds": float(s.get("edit_delay_seconds", 3.0)),
-                  "edit_delay_random": bool(s.get("edit_delay_random", False)),
-                  "edit_delay_min": float(s.get("edit_delay_min", 2.0)),
-                  "edit_delay_max": float(s.get("edit_delay_max", 6.0)),
-                  "placeholder_text": s.get("placeholder_text", "سلام"),
-                  "placeholder_random": bool(s.get("placeholder_random", False)),
-                  "placeholder_list": s.get("placeholder_list", ""),
-                  "multi_step_edit": bool(s.get("multi_step_edit", False)),
-                  "multi_step_middle": s.get("multi_step_middle", "Hi"),
-                  "progress": {"sent":0,"failed":0,"total":0,"pending":0,"in_progress":0,
-                               "phase":T("ph_start"),"blocked":0,"round":0},
-                  "errors": []}
+            op = {"id": "sd_" + secrets.token_hex(5), "created": int(time.time()), "type": "send", "accounts": sel, "target": s.get("target", "both"), "max": s.get("max", 0) or 0, "payload": s.get("payload") or {"text": "سلام"}, "delay": 1.5, "auto_left": bool(s.get("auto_left", False)), "status": "running", "groups_only": bool(s.get("groups_only", True)), "attach_file": s.get("attach_file", ""), "infinite_loop": bool(s.get("infinite_loop", False)), "loop_delay": float(s.get("loop_delay", 3.0)), "rescan_targets": bool(s.get("rescan_targets", True)), "edit_delay_enabled": bool(s.get("edit_delay_enabled", False)), "edit_delay_seconds": float(s.get("edit_delay_seconds", 3.0)), "edit_delay_random": bool(s.get("edit_delay_random", False)), "edit_delay_min": float(s.get("edit_delay_min", 2.0)), "edit_delay_max": float(s.get("edit_delay_max", 6.0)), "placeholder_text": s.get("placeholder_text", "سلام"), "placeholder_random": bool(s.get("placeholder_random", False)), "placeholder_list": s.get("placeholder_list", ""), "multi_step_edit": bool(s.get("multi_step_edit", False)), "multi_step_middle": s.get("multi_step_middle", "Hi"), "progress": {"sent":0,"failed":0,"total":0,"pending":0,"in_progress":0,"phase":T("ph_start"),"blocked":0,"round":0}, "errors": []}
             _save_op(op); clear_conv(cid)
             asyncio.create_task(run_sender(op, log_cb))
             return await show_op_detail(op["id"])
 
     if h == "cfg":
         sub = p[1] if len(p) > 1 else ""
-        if sub == "set" and len(p) >= 3:
-            key = p[2]
-            get_conv(cid)["cfg_wait"] = key
-            return await ask(T("cfg_value_q", k=key))
+        if sub == "set" and len(p) >= 3: get_conv(cid)["cfg_wait"] = p[2]; return await ask(T("cfg_value_q", k=p[2]))
         if sub == "toggle_autojoin":
-            cfg = _load(CFG_FILE, DEFAULT_CFG)
-            cfg["auto_join_linkdoni"] = 0 if int(cfg.get("auto_join_linkdoni", 1)) else 1
-            _save(CFG_FILE, cfg); return await show_cfg()
+            cfg = _load(CFG_FILE, DEFAULT_CFG); cfg["auto_join_linkdoni"] = 0 if int(cfg.get("auto_join_linkdoni", 1)) else 1; _save(CFG_FILE, cfg); return await show_cfg()
         if sub == "toggle_listener":
-            cfg = _load(CFG_FILE, DEFAULT_CFG)
-            cfg["listener"] = 0 if int(cfg.get("listener", 1)) else 1
-            _save(CFG_FILE, cfg); return await show_cfg()
+            cfg = _load(CFG_FILE, DEFAULT_CFG); cfg["listener"] = 0 if int(cfg.get("listener", 1)) else 1; _save(CFG_FILE, cfg); return await show_cfg()
 
 # ═══════════════ BOOT ═══════════════
 async def _post_init(app):
@@ -5699,6 +5507,8 @@ async def _post_init(app):
         asyncio.create_task(keepalive_loop())
     except Exception as e:
         flog(f"[post_init] {type(e).__name__}: {e}")
+    try: _ensure_template_nums()
+    except Exception: pass
 
 async def _on_error(update, context):
     flog(f"[!] {type(context.error).__name__}: {context.error}", "error")
@@ -5739,6 +5549,8 @@ def main(token=None, owner_id=None):
         except: FORCED_OWNER = 8389746549
     STATE["owner"] = FORCED_OWNER
     ensure_soroosh_loop()
+    try: _ensure_template_nums()
+    except Exception: pass
     flog(f"[+] VERSION: {VERSION}"); flog(f"[+] DATA_DIR: {DATA_DIR}")
     req = HTTPXRequest(connection_pool_size=8, connect_timeout=30.0,
                        read_timeout=30.0, write_timeout=30.0, pool_timeout=30.0)
