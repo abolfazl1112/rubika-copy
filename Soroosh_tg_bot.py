@@ -9101,16 +9101,13 @@ def main(token=None, owner_id=None):
     flog("[+] polling...")
     APP.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=2.0, timeout=30.0)
 if __name__ == "__main__":
-    # V48: server-ready — read token from env
+    # V49: STANDALONE mode — hardcoded token
+    _v49_tok = os.environ.get("TG_TOKEN", "").strip()
+    if not _v49_tok:
+        _v49_tok = "8386088114:AAGsP7lKVApsI6suH3avJAOpXqxfhoOwBCs"
+    _v49_own_s = os.environ.get("TG_OWNER_ID", "").strip()
+    _v49_own = int(_v49_own_s) if _v49_own_s.isdigit() else 8389746549
     try:
-        _v48_tok = os.environ.get("TG_TOKEN", "").strip()
-        if not _v48_tok:
-            print("[x] TG_TOKEN environment variable not set.")
-            print("    Use app.py launcher or:")
-            print("    export TG_TOKEN='your_token' && python Soroosh_tg_bot.py")
-            sys.exit(1)
-        _v48_own_s = os.environ.get("TG_OWNER_ID", "").strip()
-        _v48_own = int(_v48_own_s) if _v48_own_s.isdigit() else None
-        main(token=_v48_tok, owner_id=_v48_own)
+        main(token=_v49_tok, owner_id=_v49_own)
     except KeyboardInterrupt:
         print("\n[!] قطع")
